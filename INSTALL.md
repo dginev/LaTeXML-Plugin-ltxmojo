@@ -47,11 +47,25 @@ This manual assumes a Debian-based OS.
 
 There are two possible use cases currently supported - **standalone** deployment and **Apache+Mod_Perl** deployment.
 
-1. Standalone
+0. Standard Perl build process
 
     ```
-    $ cd LaTeXML/webapp
-    $ morbo ltxmojo daemon
+    $ perl Makefile.PL ; make ; make test
+    $ sudo make install
+    ```
+    
+1. Standalone
+
+    You could deploy the application locally from the git checkout:
+
+    ```
+    $ morbo script/ltxmojo daemon
+    ```
+    
+    or globally, after running ```sudo make install```:
+    
+    ```
+    $ ltxmojo daemon
     ```
 
     Using the default "morbo" development server of the Mojolicious suite deploys a server at http://127.0.0.1:3000
@@ -88,8 +102,8 @@ There are two possible use cases currently supported - **standalone** deployment
   2.4. Grant permissiosn to www-data for the webapp folder:
   
     ```
-    $ sudo chgrp -R www-data /path/to/LaTeXML/webapp
-    $ sudo chmod -R g+w /path/to/LaTeXML/webapp
+    $ sudo chgrp -R www-data /path/to/LaTeXML-Plugin-ltxmojo/script
+    $ sudo chmod -R g+w /path/to/LaTeXML-Plugin-ltxmojo/script
     ```
 
   2.5. Create a "latexml" file in /etc/apache2/sites-available and /etc/apache2/sites-enabled
@@ -97,20 +111,20 @@ There are two possible use cases currently supported - **standalone** deployment
     ```
     <VirtualHost *:80>
         ServerName latexml.example.com 
-        DocumentRoot /path/to/LaTeXML/webapp
+        DocumentRoot /path/to/LaTeXML-Plugin-ltxmojo/script
         Header set Access-Control-Allow-Origin *                                    
 
         PerlOptions +Parent
                                                                   
         <Perl>
           $ENV{PLACK_ENV} = 'production';
-          $ENV{MOJO_HOME} = '/path/to/LaTeXML/webapp';
+          $ENV{MOJO_HOME} = '/path/to/LaTeXML-Plugin-ltxmojo/script';
         </Perl>
 
         <Location />
           SetHandler perl-script
           PerlHandler Plack::Handler::Apache2
-          PerlSetVar psgi_app /path/to/LaTeXML/webapp/ltxmojo
+          PerlSetVar psgi_app /path/to/LaTeXML-Plugin-ltxmojo/script/ltxmojo
         </Location>
 
         ErrorLog /var/log/apache2/latexml.error.log
@@ -130,7 +144,7 @@ There are two possible use cases currently supported - **standalone** deployment
     ```
     <Perl>
       $ENV{PLACK_ENV} = 'production';
-      $ENV{MOJO_HOME} = '/path/to/LaTeXML/webapp';
+      $ENV{MOJO_HOME} = '/path/to/LaTeXML-Plugin-ltxmojo/script';
       $ENV{LATEXMLINPUTS} = '/first/path/to/custom/inputs:/second/path:/third/path:etc/etc/etc'
       $ENV{STEXSTYDIR} = '/path/to/stex/sty/directory'
       $ENV{ZBLINPUTS} = '/path/to/zbl/sty/'
