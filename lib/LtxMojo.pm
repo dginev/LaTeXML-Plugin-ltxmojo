@@ -1,0 +1,580 @@
+package LtxMojo;
+use Mojo::Base 'Mojolicious';
+
+use File::Basename 'dirname';
+use File::Spec::Functions qw/catdir catfile/;
+
+use Mojo::JSON;
+use Mojo::IOLoop;
+use Mojo::ByteStream qw(b);
+
+use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
+use IO::String;
+use File::Path;
+#use Data::Dumper;
+use Encode;
+
+use LtxMojo::Startup;
+use LaTeXML::Util::Config;
+use LaTeXML::Util::Pathname qw(pathname_is_literaldata pathname_is_url);
+use LaTeXML::Converter;
+
+our $dbfile  = '.LaTeXML_Mojo.cache';
+
+
+# Every CPAN module needs a version
+our $VERSION = '0.3';
+
+# This method will run once at server start
+sub startup {
+my $app = shift;
+# Switch to installable home directory
+$app->home->parse(catdir(dirname(__FILE__), 'LtxMojo'));
+
+# Switch to installable "public" directory
+$app->static->paths->[0] = $app->home->rel_dir('public');
+# Switch to installable "templates" directory
+$app->renderer->paths->[0] = $app->home->rel_dir('templates');
+
+$ENV{MOJO_MAX_MESSAGE_SIZE} = 107374182; # close to 100 MB file upload limit
+$ENV{MOJO_REQUEST_TIMEOUT} = 600;# 10 minutes;
+$ENV{MOJO_CONNECT_TIMEOUT} = 120; # 2 minutes
+$ENV{MOJO_INACTIVITY_TIMEOUT} = 600; # 10 minutes;
+
+# Make signed cookies secure
+$app->secret('LaTeXML is the way to go!');
+
+#Prep a LaTeXML Startup instance
+my $startup = LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
+
+# Do a one-time check for admin, add if none:
+$startup->modify_user('admin', 'admin', 'admin')
+  unless $startup->exists_user('admin');
+
+# Adapted From: http://th.atguy.com/mycode/generate_random_string/
+my @rchars=('a'..'z','A'..'Z');
+$app->helper(rand_str => sub {
+  my ($self,$length)=@_;
+  my $random_string;
+  foreach (1..$length) {
+    # rand @chars will generate a random 
+    # number between 0 and scalar @chars
+    $random_string.=$rchars[rand @rchars];
+  }
+  return $random_string;
+});
+
+$app->helper(convert_zip => sub {
+  my ($self) = @_;
+
+  my $rdir = '/tmp/' . $self->rand_str(6) . '/';
+  mkdir $rdir;
+  #.zip (can't support others for now)
+  my $content_handle = IO::String->new($self->req->body);
+  my $zip = Archive::Zip->new();
+  $self->render(text=>"Archive is corrupt!") unless
+    ($zip->readFromFileHandle( $content_handle ) == AZ_OK);
+  $zip->extractTree('',$rdir);
+  # Make sure we point to the actual source directory
+  my $name = $self->req->headers->header('x-file-name');
+  $name =~ s/\.zip//;
+  my $srcdir = $rdir.$name."/";
+  # HTTP GET parameters hold the conversion options
+  my @all_params = @{ $self->req->url->query->params || [] };
+  my $opts=[];
+  # Ugh, disallow 'null' as a value!!! (TODO: Smarter fix??)
+  while (my ($key,$value) = splice(@all_params,0,2)) {
+    if ($key=~/local|path/) {
+      # You don't get to specify harddrive info in the web service
+      next;
+    }
+    $value = '' if ($value && ($value  eq 'null'));
+    push @$opts, ($key,$value);
+  }
+  push @$opts, ('path',$srcdir);
+
+  my $config = LateXML::Util::Config->new();
+  $config->read_keyvals($opts);
+  my $converter = LaTeXML::Converter->get_converter($opts);
+  #Override/extend with session-specific options in $opt:
+  $converter->prepare_session($opts);
+  #Send a request:
+  my $response = $converter->convert($srcdir.$name.'.tex');
+  if (defined $response) {
+      my ($result, $status, $status_code, $log) = map { $response->{$_} } qw(result status status_code log);
+      if ($result) {
+        my $destination = $opts->get('destination');
+        if (!$destination) {
+          my $ext = '.'.$opts->get('format')||'xml';
+          $destination = $srcdir.$name.$ext;
+        }
+        open(OUT,">",$destination) or $self->render(text=>"Couldn't open output file ".$destination.": $!");
+        print OUT $result;
+        close OUT;
+      } else {
+	# Delete converter if Fatal occurred
+	undef $converter;
+      }
+      if ($log) {
+        my $logfile = $opts->get('log');
+        if (!$logfile) {
+          my $ext = '.log';
+          $logfile = $srcdir.$name.$ext;
+        }
+        open(OUT,">",$logfile) or $self->render(text=>"Couldn't open log file ".$logfile.": $!");
+        print OUT $log;
+        close OUT;
+      }
+    }
+  # Zip and send back
+  my $returnzip = Archive::Zip->new();
+  my $payload='';
+  $returnzip->addTree($srcdir,$name);
+  $content_handle = IO::String->new($payload);
+  $self->render(text=>'final Archive creation failed') unless ($returnzip->writeToFileHandle( $content_handle ) == AZ_OK);
+  # Clean up
+  File::Path::remove_tree($rdir);
+  my $headers = Mojo::Headers->new;
+  $headers->add('Content-Type',"application/zip;name=$name.zip");
+  $headers->add('Content-Disposition',"attachment;filename=$name.zip");
+  $self->res->content->headers($headers);
+  return $self->render(data=>$payload);
+});
+
+  # TODO: Maybe reintegrate IF we support username-based profiles
+  # if (!defined $opt->{profile}) {
+  #   if (defined $opt->{user}
+  #     && $startup->verify_user($opt->{user}, $opt->{password}))
+  #   {
+  #     $opt->{profile} =
+  #       $startup->lookup_user_property($opt->{user}, 'default') || 'custom';
+  #   }
+  #   else {
+  #     $opt->{profile} = 'custom';
+  #   }
+  # }
+
+$app->helper(convert_string => sub {
+  my ($self) = @_;  
+  my ($source,$is_jsonp);
+  my $get_params = $self->req->url->query->params || [];
+  my $post_params = $self->req->body_params->params || [];
+  if (scalar(@$post_params) == 1) {
+    $source = $post_params->[0];
+    $post_params=[];
+  } elsif ((scalar(@$post_params) == 2) && ($post_params->[0] !~ /^tex|source$/)) {
+    $source = $post_params->[0].$post_params->[1];
+    $post_params=[];
+  }
+  # We need to be careful to preserve the parameter order, so use arrayrefs
+  my @all_params = (@$get_params, @$post_params);
+  my $opts = [];
+  # Ugh, disallow 'null' as a value!!! (TODO: Smarter fix??)
+  while (my ($key,$value) = splice(@all_params,0,2)) {
+    # JSONP ?
+    if ($key eq 'jsonp') {
+      $is_jsonp = $value;
+      next;
+    } elsif ($key =~ /^(tex)|(source)$/) {
+      # TeX is data, separate
+      $source = $value unless defined $source;
+      next;
+    } elsif ($key=~/local|path/) {
+      # You don't get to specify harddrive info in the web service
+      next;
+    }
+    $value = '' if ($value && ($value  eq 'null'));
+    push @$opts, ($key,$value);
+  }
+  my $config = LaTeXML::Util::Config->new();
+  $config->read_keyvals($opts);
+  # We now have a LaTeXML config object - $config.
+  my $converter = LaTeXML::Converter->get_converter($config);
+
+  #Override/extend with session-specific options in $opt:
+  $converter->prepare_session($config);
+  # If there are no protocols, use literal: as default:
+  if ((! defined $source) || (length($source)<1)) {
+    $self->render(json => {result => '', status => "Fatal:input:empty No TeX provided on input", status_code=>3,
+                           log => "Status:conversion:3\nFatal:input:empty No TeX provided on input"});
+  } else {
+    $source = "literal:".$source unless (pathname_is_url($source));
+    #Send a request:
+    my $response = $converter->convert($source);
+    my ($result, $status, $status_code, $log);
+    if (defined $response) {
+      ($result, $status, $status_code, $log) = map { $response->{$_} } qw(result status status_code log);
+    }
+    # Delete converter if Fatal occurred
+    undef $converter unless defined $result;
+    # TODO: This decode business is fishy... very fishy!
+    if ($is_jsonp) {
+        my $json_result = $self->render(
+  	  json => {result => $result, 
+  		   status => $status, status_code=>$status_code, log => $log, partial=>1});
+        $self->render(data => "$is_jsonp($json_result)", format => 'js');
+    } else {
+        $self->render(json => {result => $result, status => $status, status_code=>$status_code, log => $log});
+    }
+  }
+});
+
+
+################################################
+##                                            ##
+##              ROUTES                        ##
+##                                            ##
+################################################
+my $r = $app->routes;
+$r->post('/convert' => sub {
+  my $self = shift;
+  my $type = $self->req->headers->header('x-file-type');
+  if ($type && $type =~ 'zip' && ($self->req->headers->header('content-type') eq 'multipart/form-data')) {
+    $self->convert_zip;
+  } else {
+    $self->convert_string;
+  }
+});
+
+$r->websocket('/convert' => sub {
+  my $self  = shift;
+  my $json = Mojo::JSON->new;
+  # Connected
+  $self->app->log->debug('WebSocket connected.');
+  # Increase inactivity timeout for connection a bit
+  Mojo::IOLoop->stream($self->tx->connection)->timeout(300);
+  $self->on('message' => sub {
+	      my ($tx, $bytes) = @_;
+	      #TODO: We want the options in the right order, is this Decode safe in this respect?
+	      my $opts = $json->decode($bytes);
+	      my $source = $opts->{source}; delete $opts->{source};
+	      $source = $opts->{tex} unless defined $opts->{source}; delete $opts->{tex};
+	      my $config = LaTeXML::Util::Config->new();
+        $config->read_keyvals([%$opts]);
+	      # We now have a LaTeXML options object - $opt.
+	      my $converter = LaTeXML::Converter->get_converter($config);
+	      #Override/extend with session-specific options in $opt:
+	      $converter->prepare_session($config);
+	      #Send a request:
+	      my $response = $converter->convert($source);
+	      my ($result, $status, $log);
+	      if (defined $response) {
+		      if (! defined $response->{result}) {
+		      # Delete converter if Fatal occurred
+		      undef $converter;
+		      } else {
+		        #$response->{result} = decode('UTF-8',$response->{result});
+		      }
+	      }
+	      $tx->send({text=>$json->encode($response)});
+	    });
+  # Disconnected
+  $self->on('finish' => sub {
+	      my $self = shift;
+	      $self->app->log->debug('WebSocket disconnected.');
+	    });
+});
+
+$r->get('/login' => sub {
+  my $self = shift;
+  my $name = $self->param('name') || '';
+  my $pass = $self->param('pass') || '';
+  return $self->render
+    unless ($startup->verify_user($name, $pass) eq 'admin');
+  $self->session(name => $name);
+  $self->flash(message => "Thanks for logging in $name!");
+  $self->redirect_to('admin');
+} => 'login');
+
+$r->get('/about' => sub {
+  my $self    = shift;
+  my $headers = Mojo::Headers->new;
+  $headers->add('Content-Type', 'application/xhtml+xml');
+  $self->res->content->headers($headers);
+  $self->render();
+} => 'about');
+
+$r->get('/demo' => sub {
+  my $self = shift;
+} => 'demo');
+
+$r->get('/editor' => sub {
+  my $self    = shift;
+  my $headers = Mojo::Headers->new;
+  $headers->add('Content-Type', 'application/xhtml+xml');
+  $self->res->content->headers($headers);
+  $self->render();
+} => 'editor');
+
+$r->get('/editor5' => sub {
+  my $self    = shift;
+  my $headers = Mojo::Headers->new;
+  $headers->add('Content-Type', 'text/html');
+  $self->res->content->headers($headers);
+  $self->render();
+} => 'editor5');
+
+$r->get('/ws-editor' => sub {
+  my $self    = shift;
+  my $headers = Mojo::Headers->new;
+  $headers->add('Content-Type', 'application/xhtml+xml');
+  $self->res->content->headers($headers);
+  $self->render();
+} => 'ws-editor');
+
+
+$r->get('/' => sub {
+  my $self = shift;
+  return $self->redirect_to('about');
+});
+
+$r->get('/logout' => sub {
+  my $self = shift;
+  $self->session(expires => 1);
+  $self->flash(message => "Successfully logged out!");
+  $self->redirect_to('login');
+});
+
+$r->get('/admin' => sub {
+  my $self = shift;
+  return $self->redirect_to('login') unless $self->session('name');
+  $self->stash(startup => $startup);
+  $self->render;
+} => 'admin');
+
+$r->get('/help' => sub {
+  my $self = shift;
+  $self->render;
+} => 'help');
+
+
+$r->get('/upload' => sub {
+  my $self = shift;
+  $self->render;
+} => 'upload');
+
+$r->post('/upload' => sub {
+  my $self = shift;
+  # TODO: Need a session?
+  my $type = $self->req->headers->header('x-file-type');
+  if ($type && $type =~ 'zip' && ($self->req->headers->header('content-type') eq 'multipart/form-data')) {
+    $self->convert_zip;
+  } else {
+    #.tex , .sty , .jpg and so on - write to filesystem (when are we done?)
+    $self->render(text=>"Uploaded, but ignored!");
+  }
+});
+
+$r->any('/ajax' => sub {
+  my $self = shift;
+  return $self->redirect_to('login') unless $self->session('name');
+  my $header = $self->req->headers->header('X-Requested-With');
+  if ($header && $header eq 'XMLHttpRequest') {
+
+    # Users API:
+    if ($self->param('user_action')) {
+      my $name    = $self->param('name');
+      my $message = 'This request was empty, please resend with Name set!';
+      given ($self->param('user_action')) {
+        when ('modify') {
+          if ($name) {
+            my $pass    = $self->param('pass');
+            my $role    = $self->param('role');
+            my $default = $self->param('default_profile');
+            $message = $startup->modify_user($name, $pass, $role, $default);
+          }
+        }
+        when ('add') {
+          if ($name) {
+            my $pass    = $self->param('pass');
+            my $role    = $self->param('role');
+            my $default = $self->param('default_profile');
+            $message = $startup->modify_user($name, $pass, $role, $default);
+          }
+        }
+        when ('delete') { $message = $startup->delete_user($name) if $name; }
+        when ('startup_users') {
+          $self->render(
+            json => {
+              users => $startup->users
+            }
+          );
+        }
+        when ('overview_users') {
+          my $users   = $startup->users;
+          my $summary = [];
+          push @$summary, $startup->summary_user($_) foreach (@$users);
+          $self->render(json => {users => $users, summary => $summary});
+        }
+        default { $message = "Unrecognized Profile Action!" }
+      };
+      $self->render(json => {message => $message});
+    }
+
+    # Profiles API:
+    if ($self->param('profile_action')) {
+      my $message =
+        'This request was empty, please resend with profile_action set!';
+      given ($self->param('profile_action')) {
+        when ('startup_profiles') {
+          $self->render(
+            json => {
+              profiles => [@{$startup->profiles}]
+            }
+          );
+        }
+        when ('select') {
+          my $pname = $self->param('profile_name');
+          $self->render(json => {message => 'Please provide a profile name!'})
+            unless $pname;
+          my $form  = $startup->summary_profile($pname);
+          my $lines = 0;
+          $lines++ while ($form =~ /<[tb]r/g);
+          my $minh = "min-height: " . ($lines * 5) . "px;";
+          my $message = "Selected profile: " . $pname;
+          my $json = Mojo::JSON->new;
+          open TMP, ">", "/tmp/json.txt";
+          print TMP $json->encode(
+            {form => $form, style => $minh, message => $message});
+          close TMP;
+          $self->render(
+            text => $json->encode(
+              {form => $form, style => $minh, message => $message}
+            )
+          );
+        }
+        default {
+          $self->render(
+            json => {
+              message => "Unrecognized Profile Action!"
+            }
+            )
+        }
+      };
+      $self->render(json => {message => $message});
+    }
+
+    # General Actions API:
+
+  }
+  else {
+    $self->render(text => "Only AJAX request are acceptexd at this route!\n");
+  }
+});
+
+}
+1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+C<ltxmojo> - A web server for the LaTeXML suite.
+
+=head1 DESCRIPTION
+
+L<ltxmojo> is a Mojolicious::Lite web application that builds on LateXML::Converter to provide
+on demand TeX to XML conversion as a scalable web service.
+
+The service comes together with a collection of convenient interfaces, conversion examples,
+as well as an administration system for user and transformation profile management.
+
+=head1 ROUTES
+
+The following routes are supported:
+
+=over 4
+
+=item C< / >
+
+Root route, redirects to /about
+
+=item C</about>
+
+On HTTP GET, provides a brief summary of the web service functionality.
+
+=item C</admin>
+
+On HTTP GET, provides an administrative interface for managing user and profile data, as well
+as to examine the overal system status.
+
+=item C</ajax>
+
+Manages AJAX requests for all administrative (and NOT conversion) tasks.
+
+=item C</convert>
+
+Accepts HTTP POST requests to perform conversion jobs.
+
+The request syntax supports the normal key=value option fields for L<LaTeXML::Converter>.
+
+Additionally, one can request embeddable snippets via I<embed=1>,
+ as well as forced xml:id attributes on every element via I<force_ids=1>.
+Supported via L<LaTeXML::Util::Extras>.
+
+The most significant enhancements are in provdiding options for user and conversion profiles,
+namely I<user=string>, I<password=string> and I<profile=string>.
+Based on the sessioning functionality enabled by L<LaTeXML::Util::Startup>, a user can now
+easily perform conversions based on his custom preferences. Moreover, conversion profiles allow
+for users to obtain the desired transformation setup with just specifying a single "profile" field.
+For a list of predefined profiles, consult L<LaTeXML::Util::Startup>.
+
+The actual TeX/LaTeX source to be converted should be sent serialized as C<tex=content>.
+
+=item C</editor>
+
+Provides an AJAX and jQuery-based editor, originally created by Heinrich Stamerjohanns,
+to showcase on-the-fly conversion of LaTeX snippets to XHTML.
+A set of illustrating examples is provided, as well as a
+convenient integration with LaTeXML::Converter's log and status reports.
+
+A jQuery conversion request is as simple as:
+
+ $.post("/convert", { "tex": tex, "profile":"fragment"});
+
+=item C</help>
+
+Help page, providing a guide through the site's functionality.
+
+=item C</login>
+
+A simple login interface.
+
+=item C</logout>
+
+A simple logout route that ends the current session.
+
+=item C</upload>
+
+On HTTP GET, this route provides an interface for converting LaTeX files, or entire setups,
+by accepting .zip and .tar.gz archives, as well as mutlipart uploads of several file fragments,
+as long as no subdirectories are present. Note that this is achieved with HTML5's native support
+for multipart file uploads, hence a modern browser is required.
+
+On HTTP POST, the uploaded bundle is converted by the server, returning an archive with the result.
+
+=back
+
+=head1 DEPLOYMENT
+
+Installation and deployment are described in detail in LaTeXML/webapp/INSTALL.
+
+As a rule of thumb, the regular deployment process for Mojolicious apps applies.
+
+
+=head1 SEE ALSO
+
+L<latexmls>, L<latexmlc>, L<LaTeXML::Converter>
+
+=head1 AUTHOR
+
+Deyan Ginev <d.ginev@jacobs-university.de>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
