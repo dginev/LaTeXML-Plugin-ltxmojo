@@ -93,19 +93,19 @@ $app->helper(convert_zip => sub {
   }
   push @$opts, ('path',$srcdir);
 
-  my $config = LateXML::Util::Config->new();
+  my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
-  my $converter = LaTeXML::Converter->get_converter($opts);
+  my $converter = LaTeXML::Converter->get_converter($config);
   #Override/extend with session-specific options in $opt:
-  $converter->prepare_session($opts);
+  $converter->prepare_session($config);
   #Send a request:
   my $response = $converter->convert($srcdir.$name.'.tex');
   if (defined $response) {
       my ($result, $status, $status_code, $log) = map { $response->{$_} } qw(result status status_code log);
       if ($result) {
-        my $destination = $opts->get('destination');
+        my $destination = $config->get('destination');
         if (!$destination) {
-          my $ext = '.'.$opts->get('format')||'xml';
+          my $ext = '.'.$config->get('format')||'xml';
           $destination = $srcdir.$name.$ext;
         }
         open(OUT,">",$destination) or $self->render(text=>"Couldn't open output file ".$destination.": $!");
@@ -116,7 +116,7 @@ $app->helper(convert_zip => sub {
 	undef $converter;
       }
       if ($log) {
-        my $logfile = $opts->get('log');
+        my $logfile = $config->get('log');
         if (!$logfile) {
           my $ext = '.log';
           $logfile = $srcdir.$name.$ext;

@@ -18,5 +18,6 @@ WriteMakefile(
     'Archive::Zip' => 0,
     'IO::String' => 0
   },
+  EXE_FILES => ['script/ltxmojo'],
   test => {TESTS => 't/*.t'}
 );
