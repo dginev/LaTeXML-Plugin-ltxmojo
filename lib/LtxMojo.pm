@@ -79,11 +79,13 @@ $app->helper(convert_zip => sub {
   $config->set('paths',[$source_dir]);
   $config->set('sourcedirectory',$source_dir);
   $config->set('sitedirectory',$destination_dir);
-  my $ext = $config->get('format')||'xml';
-  my $destination = catfile($destination_dir,"$name.$ext");
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
+  # Only HTML5 for now.
+  $config->set('format','html5');
+  my $ext = 'html';
+  my $destination = catfile($destination_dir,"$name.$ext");
+  # Prepare converter
   my $converter = LaTeXML::Converter->get_converter($config);
-  #Override/extend with session-specific options in $opt:
   $converter->prepare_session($config);
   #Send a request:
   my $response = $converter->convert(catfile($source_dir,"$name.tex"));
