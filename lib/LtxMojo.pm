@@ -78,7 +78,8 @@ $app->helper(convert_zip => sub {
   my $destination = catfile($destination_dir,"$name.$ext");
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
-  $config->set('paths',[$source_dir]);
+  my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
+  $config->set('paths',[$source_dir,@latexml_inputs]);
   $config->set('sourcedirectory',$source_dir);
   $config->set('sitedirectory',$destination_dir);
   $config->set('destination',$destination);
@@ -175,7 +176,8 @@ $app->helper(convert_string => sub {
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
   # We now have a LaTeXML config object - $config.
-  $config->set('paths',[]);
+  my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
+  $config->set('paths',\@latexml_inputs);
   my $converter = LaTeXML::Converter->get_converter($config);
 
   #Override/extend with session-specific options in $opt:
