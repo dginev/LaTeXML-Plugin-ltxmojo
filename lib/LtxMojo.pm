@@ -74,16 +74,17 @@ $app->helper(convert_zip => sub {
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value); }
 
+  my $ext = 'html';
+  my $destination = catfile($destination_dir,"$name.$ext");
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
   $config->set('paths',[$source_dir]);
   $config->set('sourcedirectory',$source_dir);
   $config->set('sitedirectory',$destination_dir);
+  $config->set('destination',$destination);
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
   # Only HTML5 for now.
   $config->set('format','html5');
-  my $ext = 'html';
-  my $destination = catfile($destination_dir,"$name.$ext");
   # Prepare converter
   my $converter = LaTeXML::Converter->get_converter($config);
   $converter->prepare_session($config);
