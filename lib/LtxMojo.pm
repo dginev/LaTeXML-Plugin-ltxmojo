@@ -7,6 +7,7 @@ use Mojo::ByteStream qw(b);
 use File::Basename 'dirname';
 use File::Spec::Functions qw(catdir catfile);
 use File::Temp qw(tempdir);
+use File::Path qw(remove_tree);
 
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use IO::String;
@@ -81,7 +82,6 @@ $app->helper(convert_zip => sub {
   my $ext = $config->get('format')||'xml';
   my $destination = catfile($destination_dir,"$name.$ext");
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
-  print STDERR "\n\nSDIR: $source_dir\nDDIR: $destination_dir\nDNATION: $destination\n\n";
   my $converter = LaTeXML::Converter->get_converter($config);
   #Override/extend with session-specific options in $opt:
   $converter->prepare_session($config);
@@ -118,6 +118,9 @@ $app->helper(convert_zip => sub {
   $headers->add('Content-Type',"application/zip;name=$name.zip");
   $headers->add('Content-Disposition',"attachment;filename=$name.zip");
   $self->res->content->headers($headers);
+  # Cleanup before returning
+  remove_tree($source_dir,$destination_dir);
+  # Return
   return $self->render(data=>$payload);
 });
 
