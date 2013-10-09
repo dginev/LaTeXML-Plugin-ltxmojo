@@ -1,26 +1,23 @@
 package LtxMojo;
 use Mojo::Base 'Mojolicious';
-
-use File::Basename 'dirname';
-use File::Spec::Functions qw/catdir catfile/;
-
 use Mojo::JSON;
 use Mojo::IOLoop;
 use Mojo::ByteStream qw(b);
 
+use File::Basename 'dirname';
+use File::Spec::Functions qw(catdir catfile);
+use File::Temp qw(tempdir);
+
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use IO::String;
-use File::Path;
-#use Data::Dumper;
 use Encode;
 
-use LtxMojo::Startup;
 use LaTeXML::Util::Config;
 use LaTeXML::Util::Pathname qw(pathname_is_literaldata pathname_is_url);
 use LaTeXML::Converter;
+use LtxMojo::Startup;
 
 our $dbfile  = '.LaTeXML_Mojo.cache';
-
 
 # Every CPAN module needs a version
 our $VERSION = '0.3';
@@ -51,75 +48,60 @@ my $startup = LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
 $startup->modify_user('admin', 'admin', 'admin')
   unless $startup->exists_user('admin');
 
-# Adapted From: http://th.atguy.com/mycode/generate_random_string/
-my @rchars=('a'..'z','A'..'Z');
-$app->helper(rand_str => sub {
-  my ($self,$length)=@_;
-  my $random_string;
-  foreach (1..$length) {
-    # rand @chars will generate a random 
-    # number between 0 and scalar @chars
-    $random_string.=$rchars[rand @rchars];
-  }
-  return $random_string;
-});
-
 $app->helper(convert_zip => sub {
   my ($self) = @_;
+  my $source_dir = tempdir();
+  my $destination_dir = tempdir();
 
-  my $rdir = '/tmp/' . $self->rand_str(6) . '/';
-  mkdir $rdir;
+  # Make sure we point to the actual source directory
+  my $name = $self->req->headers->header('x-file-name');
+  $name =~ s/\.zip$//;
   #.zip (can't support others for now)
   my $content_handle = IO::String->new($self->req->body);
   my $zip = Archive::Zip->new();
   $self->render(text=>"Archive is corrupt!") unless
     ($zip->readFromFileHandle( $content_handle ) == AZ_OK);
-  $zip->extractTree('',$rdir);
-  # Make sure we point to the actual source directory
-  my $name = $self->req->headers->header('x-file-name');
-  $name =~ s/\.zip//;
-  my $srcdir = $rdir.$name."/";
+  $zip->extractTree($name,$source_dir);
   # HTTP GET parameters hold the conversion options
   my @all_params = @{ $self->req->url->query->params || [] };
   my $opts=[];
   # Ugh, disallow 'null' as a value!!! (TODO: Smarter fix??)
   while (my ($key,$value) = splice(@all_params,0,2)) {
-    if ($key=~/local|path/) {
+    if ($key=~/local|path|destination|directory/) {
       # You don't get to specify harddrive info in the web service
-      next;
-    }
+      next; }
     $value = '' if ($value && ($value  eq 'null'));
-    push @$opts, ($key,$value);
-  }
-  push @$opts, ('path',$srcdir);
+    push @$opts, ($key,$value); }
 
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
+  $config->set('paths',[$source_dir]);
+  $config->set('sourcedirectory',$source_dir);
+  $config->set('sitedirectory',$destination_dir);
+  my $ext = $config->get('format')||'xml';
+  my $destination = catfile($destination_dir,"$name.$ext");
+  $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
+  print STDERR "\n\nSDIR: $source_dir\nDDIR: $destination_dir\nDNATION: $destination\n\n";
   my $converter = LaTeXML::Converter->get_converter($config);
   #Override/extend with session-specific options in $opt:
   $converter->prepare_session($config);
   #Send a request:
-  my $response = $converter->convert($srcdir.$name.'.tex');
+  my $response = $converter->convert(catfile($source_dir,"$name.tex"));
   if (defined $response) {
       my ($result, $status, $status_code, $log) = map { $response->{$_} } qw(result status status_code log);
       if ($result) {
-        my $destination = $config->get('destination');
-        if (!$destination) {
-          my $ext = '.'.$config->get('format')||'xml';
-          $destination = $srcdir.$name.$ext;
-        }
         open(OUT,">",$destination) or $self->render(text=>"Couldn't open output file ".$destination.": $!");
         print OUT $result;
         close OUT;
       } else {
-	# Delete converter if Fatal occurred
-	undef $converter;
+        # Delete converter if Fatal occurred
+        undef $converter;
       }
       if ($log) {
         my $logfile = $config->get('log');
         if (!$logfile) {
-          my $ext = '.log';
-          $logfile = $srcdir.$name.$ext;
+          my $ext = 'log';
+          $logfile = catfile($destination_dir,"$name.$ext");
         }
         open(OUT,">",$logfile) or $self->render(text=>"Couldn't open log file ".$logfile.": $!");
         print OUT $log;
@@ -129,11 +111,9 @@ $app->helper(convert_zip => sub {
   # Zip and send back
   my $returnzip = Archive::Zip->new();
   my $payload='';
-  $returnzip->addTree($srcdir,$name);
+  $returnzip->addTree($destination_dir,$name);
   $content_handle = IO::String->new($payload);
   $self->render(text=>'final Archive creation failed') unless ($returnzip->writeToFileHandle( $content_handle ) == AZ_OK);
-  # Clean up
-  File::Path::remove_tree($rdir);
   my $headers = Mojo::Headers->new;
   $headers->add('Content-Type',"application/zip;name=$name.zip");
   $headers->add('Content-Disposition',"attachment;filename=$name.zip");
@@ -179,7 +159,7 @@ $app->helper(convert_string => sub {
       # TeX is data, separate
       $source = $value unless defined $source;
       next;
-    } elsif ($key=~/local|path/) {
+    } elsif ($key=~/local|path|destination|directory/) {
       # You don't get to specify harddrive info in the web service
       next;
     }
@@ -189,6 +169,7 @@ $app->helper(convert_string => sub {
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
   # We now have a LaTeXML config object - $config.
+  $config->set('paths',[]);
   my $converter = LaTeXML::Converter->get_converter($config);
 
   #Override/extend with session-specific options in $opt:
