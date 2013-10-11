@@ -7,31 +7,29 @@
 <h2>Upload Interface</h2>
 <p>This service converts TeX/LaTeX documents into XHTML.</p>
 <p>Currently, please send a single self-sufficient ZIP archive (up to 40 MB),
-  containing all relevant sources.<br></br> The <b>only</b> supported archive trees contain a single directory which shares its name with the main TeX file to be converted. </p>
+  containing all relevant sources.<br></br> The <b>only</b> supported archives are named after the main TeX file to be converted, which is to be located at the top level of the archive. </p>
 <p>An example archived tree would be:<br></br>
-<ul><li><span style="color: rgb(184, 20, 11);">mainname</span>/
+<ul><li><span style="color: rgb(184, 20, 11);">mainname.zip</span>
 <ul><li><span style="color: rgb(184, 20, 11);">mainname</span>.tex</li>
 <li>img/<ul><li>graphic1.eps</li><li>graphic2.pdf</li></ul></li>
 <li>src/<ul><li>fragment1.tex</li><li>fragment2.tex</li></ul>
 <li>mybib.bib</li></ul></ul>
 </p>
-<p>We will soon support flat setups of TeX files (no
-  subfolders) also directly in this web interface.</p>
 
 <h3>Choose ZIP file:</h3>
 <p>
-	<input id="files-upload" type="file" multiple>
-<!--	<input id="convert-button" type="submit" value="Convert" />-->
+    <input id="files-upload" type="file" multiple>
+<!--    <input id="convert-button" type="submit" value="Convert" />-->
 </p>
 <div style="display:inline; width: 40%;
      word-wrap:break-word; float:left; margin: 15px;">
 <p id="drop-area">
-	<span class="drop-instructions">or drag and drop ZIP files here</span>
-	<span class="drop-over">Drop files here!</span>
+    <span class="drop-instructions">or drag and drop ZIP files here</span>
+    <span class="drop-over">Drop files here!</span>
 </p>
 
 <ul id="file-list">
-	<li class="no-items">(no files uploaded yet)</li>
+    <li class="no-items">(no files uploaded yet)</li>
 </ul>
 <%= javascript 'js/upload/fileAPI.js' %>
 </div>
