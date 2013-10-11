@@ -62,7 +62,8 @@ $app->helper(convert_zip => sub {
   my $zip = Archive::Zip->new();
   $self->render(text=>"Archive is corrupt!") unless
     ($zip->readFromFileHandle( $content_handle ) == AZ_OK);
-  $zip->extractTree($name,$source_dir);
+  foreach my $member($zip->memberNames()) {
+    $zip->extractMember($member, catfile($source_dir,$member)); }
   # HTTP GET parameters hold the conversion options
   my @all_params = @{ $self->req->url->query->params || [] };
   my $opts=[];
