@@ -74,7 +74,7 @@ $app->helper(convert_zip => sub {
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value); }
 
-  my $ext = 'html';
+  my $ext = 'zip';
   my $destination = catfile($destination_dir,"$name.$ext");
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
@@ -83,6 +83,7 @@ $app->helper(convert_zip => sub {
   $config->set('sourcedirectory',$source_dir);
   $config->set('sitedirectory',$destination_dir);
   $config->set('destination',$destination);
+  $config->set('whatsout','archive');
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
   # Only HTML5 for now.
   $config->set('format','html5');
@@ -91,33 +92,9 @@ $app->helper(convert_zip => sub {
   $converter->prepare_session($config);
   #Send a request:
   my $response = $converter->convert(catfile($source_dir,"$name.tex"));
-  if (defined $response) {
-      my ($result, $status, $status_code, $log) = map { $response->{$_} } qw(result status status_code log);
-      if ($result) {
-        open(OUT,">",$destination) or $self->render(text=>"Couldn't open output file ".$destination.": $!");
-        print OUT $result;
-        close OUT;
-      } else {
-        # Delete converter if Fatal occurred
-        undef $converter;
-      }
-      if ($log) {
-        my $logfile = $config->get('log');
-        if (!$logfile) {
-          my $ext = 'log';
-          $logfile = catfile($destination_dir,"$name.$ext");
-        }
-        open(OUT,">",$logfile) or $self->render(text=>"Couldn't open log file ".$logfile.": $!");
-        print OUT $log;
-        close OUT;
-      }
-    }
-  # Zip and send back
-  my $returnzip = Archive::Zip->new();
-  my $payload='';
-  $returnzip->addTree($destination_dir,$name);
-  $content_handle = IO::String->new($payload);
-  $self->render(text=>'final Archive creation failed') unless ($returnzip->writeToFileHandle( $content_handle ) == AZ_OK);
+
+  $self->render(text=>'Fatal: Internal Conversion Error, please contact the administrator.') unless
+    (defined $response && ($response->{result}));
   my $headers = Mojo::Headers->new;
   $headers->add('Content-Type',"application/zip;name=$name.zip");
   $headers->add('Content-Disposition',"attachment;filename=$name.zip");
@@ -125,7 +102,7 @@ $app->helper(convert_zip => sub {
   # Cleanup before returning
   remove_tree($source_dir,$destination_dir);
   # Return
-  return $self->render(data=>$payload);
+  return $self->render(data=>$response->{result});
 });
 
   # TODO: Maybe reintegrate IF we support username-based profiles
