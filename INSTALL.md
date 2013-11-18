@@ -22,7 +22,7 @@ This manual assumes a Debian-based OS.
     $ sudo apt-get install libclone-perl \
     libdata-compare-perl perlmagick \
     libparse-recdescent-perl libxml-libxml-perl \
-    libxml-libxslt-perl libarchive-zip-perl libio-string-perl
+    libxml-libxslt-perl libarchive-zip-perl libio-string-perl libuuid-tiny-perl
     ```
 
 4. Install LaTeXML from the arXMLiv branch:
