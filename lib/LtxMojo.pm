@@ -15,7 +15,7 @@ use Encode;
 
 use LaTeXML::Util::Config;
 use LaTeXML::Util::Pathname qw(pathname_is_literaldata pathname_is_url);
-use LaTeXML::Converter;
+use LaTeXML;
 use LtxMojo::Startup;
 
 our $dbfile  = '.LaTeXML_Mojo.cache';
@@ -40,7 +40,7 @@ $ENV{MOJO_CONNECT_TIMEOUT} = 120; # 2 minutes
 $ENV{MOJO_INACTIVITY_TIMEOUT} = 600; # 10 minutes;
 
 # Make signed cookies secure
-$app->secret('LaTeXML is the way to go!');
+$app->secrets(['LaTeXML is the way to go!']);
 
 #Prep a LaTeXML Startup instance
 my $startup = LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
@@ -89,7 +89,7 @@ $app->helper(convert_zip => sub {
   # Only HTML5 for now.
   $config->set('format','html5');
   # Prepare converter
-  my $converter = LaTeXML::Converter->get_converter($config);
+  my $converter = LaTeXML->get_converter($config);
   $converter->prepare_session($config);
   #Send a request:
   my $response = $converter->convert(catfile($source_dir,"$name.tex"));
@@ -156,7 +156,7 @@ $app->helper(convert_string => sub {
   # We now have a LaTeXML config object - $config.
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
   $config->set('paths',\@latexml_inputs);
-  my $converter = LaTeXML::Converter->get_converter($config);
+  my $converter = LaTeXML->get_converter($config);
 
   #Override/extend with session-specific options in $opt:
   $converter->prepare_session($config);
@@ -219,7 +219,7 @@ $r->websocket('/convert' => sub {
 	      my $config = LaTeXML::Util::Config->new();
         $config->read_keyvals([%$opts]);
 	      # We now have a LaTeXML options object - $opt.
-	      my $converter = LaTeXML::Converter->get_converter($config);
+	      my $converter = LaTeXML->get_converter($config);
 	      #Override/extend with session-specific options in $opt:
 	      $converter->prepare_session($config);
 	      #Send a request:
@@ -442,7 +442,7 @@ C<ltxmojo> - A web server for the LaTeXML suite.
 
 =head1 DESCRIPTION
 
-L<ltxmojo> is a Mojolicious::Lite web application that builds on LateXML::Converter to provide
+L<ltxmojo> is a Mojolicious::Lite web application that builds on LateXML to provide
 on demand TeX to XML conversion as a scalable web service.
 
 The service comes together with a collection of convenient interfaces, conversion examples,
@@ -475,7 +475,7 @@ Manages AJAX requests for all administrative (and NOT conversion) tasks.
 
 Accepts HTTP POST requests to perform conversion jobs.
 
-The request syntax supports the normal key=value option fields for L<LaTeXML::Converter>.
+The request syntax supports the normal key=value option fields for L<LaTeXML>.
 
 Additionally, one can request embeddable snippets via I<embed=1>,
  as well as forced xml:id attributes on every element via I<force_ids=1>.
@@ -495,7 +495,7 @@ The actual TeX/LaTeX source to be converted should be sent serialized as C<tex=c
 Provides an AJAX and jQuery-based editor, originally created by Heinrich Stamerjohanns,
 to showcase on-the-fly conversion of LaTeX snippets to XHTML.
 A set of illustrating examples is provided, as well as a
-convenient integration with LaTeXML::Converter's log and status reports.
+convenient integration with LaTeXML's log and status reports.
 
 A jQuery conversion request is as simple as:
 
@@ -533,7 +533,7 @@ As a rule of thumb, the regular deployment process for Mojolicious apps applies.
 
 =head1 SEE ALSO
 
-L<latexmls>, L<latexmlc>, L<LaTeXML::Converter>
+L<latexmls>, L<latexmlc>, L<LaTeXML>
 
 =head1 AUTHOR
 
