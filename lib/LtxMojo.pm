@@ -51,19 +51,9 @@ $startup->modify_user('admin', 'admin', 'admin')
 
 $app->helper(convert_zip => sub {
   my ($self) = @_;
-  my $source_dir = tempdir();
-  my $destination_dir = tempdir();
-
   # Make sure we point to the actual source directory
   my $name = $self->req->headers->header('x-file-name');
   $name =~ s/\.zip$//;
-  #.zip (can't support others for now)
-  my $content_handle = IO::String->new($self->req->body);
-  my $zip = Archive::Zip->new();
-  $self->render(text=>"Archive is corrupt!") unless
-    ($zip->readFromFileHandle( $content_handle ) == AZ_OK);
-  foreach my $member($zip->memberNames()) {
-    $zip->extractMember($member, catfile($source_dir,$member)); }
   # HTTP GET parameters hold the conversion options
   my @all_params = @{ $self->req->url->query->params || [] };
   my $opts=[];
@@ -75,34 +65,27 @@ $app->helper(convert_zip => sub {
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value); }
 
-  my $ext = 'zip';
-  my $destination = catfile($destination_dir,"$name.$ext");
   my $config = LaTeXML::Util::Config->new();
   $config->read_keyvals($opts);
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
-  $config->set('paths',[$source_dir,@latexml_inputs]);
-  $config->set('sourcedirectory',$source_dir);
-  $config->set('sitedirectory',$destination_dir);
-  $config->set('destination',$destination);
+  $config->set('paths',\@latexml_inputs);
+  $config->set('whatsin','archive');
   $config->set('whatsout','archive');
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
   # Only HTML5 for now.
   $config->set('format','html5');
-  # Prepare converter
+  # Prepare and convert
   my $converter = LaTeXML->get_converter($config);
   $converter->prepare_session($config);
-  #Send a request:
-  my $response = $converter->convert(catfile($source_dir,"$name.tex"));
-
+  my $response = $converter->convert('literal:'.$self->req->body);
+  # Catch errors
   $self->render(text=>'Fatal: Internal Conversion Error, please contact the administrator.') unless
     (defined $response && ($response->{result}));
+  # Return
   my $headers = Mojo::Headers->new;
   $headers->add('Content-Type',"application/zip;name=$name.zip");
   $headers->add('Content-Disposition',"attachment;filename=$name.zip");
   $self->res->content->headers($headers);
-  # Cleanup before returning
-  remove_tree($source_dir,$destination_dir);
-  # Return
   return $self->render(data=>$response->{result});
 });
 
