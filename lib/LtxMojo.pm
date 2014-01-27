@@ -13,7 +13,7 @@ use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use IO::String;
 use Encode;
 
-use LaTeXML::Util::Config;
+use LaTeXML::Common::Config;
 use LaTeXML::Util::Pathname qw(pathname_is_literaldata pathname_is_url);
 use LaTeXML;
 use LtxMojo::Startup;
@@ -65,7 +65,7 @@ $app->helper(convert_zip => sub {
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value); }
 
-  my $config = LaTeXML::Util::Config->new();
+  my $config = LaTeXML::Common::Config->new();
   $config->read_keyvals($opts);
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
   $config->set('paths',\@latexml_inputs);
@@ -134,7 +134,7 @@ $app->helper(convert_string => sub {
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value);
   }
-  my $config = LaTeXML::Util::Config->new();
+  my $config = LaTeXML::Common::Config->new();
   $config->read_keyvals($opts);
   # We now have a LaTeXML config object - $config.
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
@@ -199,7 +199,7 @@ $r->websocket('/convert' => sub {
 	      my $opts = $json->decode($bytes);
 	      my $source = $opts->{source}; delete $opts->{source};
 	      $source = $opts->{tex} unless defined $opts->{source}; delete $opts->{tex};
-	      my $config = LaTeXML::Util::Config->new();
+	      my $config = LaTeXML::Common::Config->new();
         $config->read_keyvals([%$opts]);
 	      # We now have a LaTeXML options object - $opt.
 	      my $converter = LaTeXML->get_converter($config);
