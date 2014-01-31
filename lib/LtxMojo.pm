@@ -71,6 +71,7 @@ $app->helper(convert_zip => sub {
   $config->set('paths',\@latexml_inputs);
   $config->set('whatsin','archive');
   $config->set('whatsout','archive');
+  $config->set('log',"$name.log");
   $config->set('local',($self->tx->remote_address eq '127.0.0.1'));
   # Only HTML5 for now.
   $config->set('format','html5');
