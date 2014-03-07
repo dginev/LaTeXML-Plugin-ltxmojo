@@ -36,28 +36,58 @@
 /* If ref got turned into span, it's "this section"*/
 .ltx_page_navbar li span.ltx_ref { white-space:normal; overflow:visible; }
 
+/* Ought to be easily removable/overridable? */
+.ltx_pagination.ltx_role_newpage { height:2em; }
 /*======================================================================
   Document Structure; Titles & Frontmatter */
 
-/* Hack to simulate run-in! */
-h6 { display:inline; font-size:100%; font-family:sans-serif; }
-h6:after { content:" "; }
-h6 + div.ltx_para,
-h6 + p { display:inline; }
+/* undo bold here to remove the browser's native h# styling,
+   at let all other styles override it (with more specific rules)*/
+.ltx_title { font-size:100%; font-weight:normal; }
+
+/* Hack to simulate run-in! put class="ltx_runin" on a title or tag
+   for it to run-into the following text. */
+.ltx_runin { display:inline; }
+.ltx_runin:after { content:" "; }
+.ltx_runin + .ltx_para,
+.ltx_runin + .ltx_para p,
+.ltx_runin + p { display:inline; }
+
+.ltx_outdent { margin-left: -2em; }
 
 /* .ltx_chapter_title, etc should be in ltx-article.css etc.
  */
 .ltx_page_main { margin:0px; padding:1em 3em 1em 2em; }
 .ltx_tocentry  { list-style-type:none; }
 
+/* support for common author block layouts.*/
+/* add class ltx_authors_1line to get authors in single line
+   with pop-up affiliation, etc. */
+.ltx_authors_1line .ltx_creator,
+.ltx_authors_1line .ltx_author_before,
+.ltx_authors_1line .ltx_author_after { display:inline;}
+.ltx_authors_1line .ltx_author_notes { display:inline-block; }
+.ltx_authors_1line .ltx_author_notes:before { content:"*"; color:blue;}
+.ltx_authors_1line .ltx_author_notes span { display:none; }
+.ltx_authors_1line .ltx_author_notes:hover span {
+       display:block; position:absolute; z-index:10;
+       background:#E0E0E0; border:3px outset gray;
+       text-align:left; }  
+
+/* add class=ltx_authors_multiline to get authors & affliations on separate lines*/
+.ltx_authors_multiline .ltx_creator,
+.ltx_authors_multiline .ltx_author_before,
+.ltx_authors_multiline .ltx_author_after,
+.ltx_authors_multiline .ltx_author_notes,
+.ltx_authors_multiline .ltx_author_notes .ltx_contact {
+        display:block; }
+
+
 /*======================================================================
   Para level */
-/*.ltx_figure .ltx_subfigure,*/
-/*.ltx_table  .ltx_subtable,*/
-/*.ltx_float  .ltx_subfloat  { width:50%; } */
-.ltx_figure .ltx_figure,
-.ltx_table  .ltx_table,
-.ltx_float  .ltx_float  { width:50%; }
+td.ltx_subfigure,
+td.ltx_subtable,
+td.ltx_subfloat { width:50%; }
 /* theorems, figure, tables, floats captions.. */
 /*======================================================================
  Blocks, Lists, Floats */
@@ -101,12 +131,12 @@ li.ltx_item > .ltx_tag { display:inline; margin-left:-1.5em; }
 
 /* NOTE: Need to try harder to get runin appearance? */
 dl.ltx_description dt { margin-right:0.5em; float:left;
-	            font-weight:bold; font-size:95%; }
+                    font-weight:bold; font-size:95%; }
 dl.ltx_description dd { margin-left:5em; }
 dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 .ltx_theorem  {margin:1em 0em 1em 0em; }
-
+.ltx_title_theorem { font-size:100%; }
 .ltx_bibliography dt { margin-right:0.5em; float:left; }
 .ltx_bibliography dd { margin-left:3em; }
 /*.ltx_biblist { list-style-type:none; }*/
@@ -154,13 +184,14 @@ table { border-collapse:collapse; }
 /*======================================================================
  Misc */
 /* .ltx_verbatim*/
-
+.ltx_verbatim { text-align:left; }
 /*======================================================================
  Meta stuff, footnotes */
 .ltx_note_content { display:none; }
 /*right:5%;  */
 .ltx_note_content {
      max-width: 70%; font-size:80%; left:15%;
+     text-align:left;
      background:#E0E0E0; border:3px outset gray; }
 .ltx_note_mark    { color:blue; }
 .ltx_note_type    { font-weight: bold; }
@@ -170,6 +201,13 @@ table { border-collapse:collapse; }
 
 .ltx_ERROR        { color:red; }
 .ltx_rdf          { display:none; }
+
+/*======================================================================
+ SVG (pgf/tikz ?) basics */
+
+.ltx_foreignobject  { margin:0; padding:0; overflow:visible; }
+/* Possible text-align:center, line-height:50%; font-size:50%; ???? */
+.ltx_foreignobject > p { margin:0; padding:0; display:block; white-space:nowrap; }
 
 /*======================================================================
  Low-level Basics */
