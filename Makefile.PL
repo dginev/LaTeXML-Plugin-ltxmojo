@@ -13,7 +13,7 @@ WriteMakefile(
   ABSTRACT => "ltxMojo - LaTeXML's web service",
   VERSION_FROM => 'lib/LtxMojo.pm',
   PREREQ_PM => {
-    'LaTeXML' => '0.7.99',
+    'LaTeXML' => '0.8.0',
     'Mojolicious' => '4.0',
     'Archive::Zip' => 0,
     'IO::String' => 0

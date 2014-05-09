@@ -21,7 +21,7 @@ use LtxMojo::Startup;
 our $dbfile  = '.LaTeXML_Mojo.cache';
 
 # Every CPAN module needs a version
-our $VERSION = '0.3';
+our $VERSION = '0.4';
 
 # This method will run once at server start
 sub startup {
