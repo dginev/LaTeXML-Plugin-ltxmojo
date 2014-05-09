@@ -67,7 +67,7 @@ $app->helper(convert_zip => sub {
 
   my $config = LaTeXML::Common::Config->new();
   $config->read_keyvals($opts);
-  my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
+  my @latexml_inputs = ('.',grep {defined} split(':',($ENV{LATEXMLINPUTS}||'')));
   $config->set('paths',\@latexml_inputs);
   $config->set('whatsin','archive');
   $config->set('whatsout','archive');
