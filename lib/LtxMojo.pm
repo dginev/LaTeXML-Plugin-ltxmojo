@@ -111,7 +111,7 @@ $app->helper(convert_string => sub {
   if (scalar(@$post_params) == 1) {
     $source = $post_params->[0];
     $post_params=[];
-  } elsif ((scalar(@$post_params) == 2) && ($post_params->[0] !~ /^tex|source$/)) {
+  } elsif ((scalar(@$post_params) == 2) && ($post_params->[0] !~ /^(tex|source)$/)) {
     $source = $post_params->[0].$post_params->[1];
     $post_params=[];
   }
@@ -124,7 +124,7 @@ $app->helper(convert_string => sub {
     if ($key eq 'jsonp') {
       $is_jsonp = $value;
       next;
-    } elsif ($key =~ /^(tex)|(source)$/) {
+    } elsif ($key =~ /^(tex|source)$/) {
       # TeX is data, separate
       $source = $value unless defined $source;
       next;
