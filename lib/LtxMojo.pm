@@ -164,8 +164,10 @@ $app->helper(convert_string => sub {
   	  json => {result => $result, 
   		   status => $status, status_code=>$status_code, log => $log, partial=>1});
         $self->render(data => "$is_jsonp($json_result)", format => 'js');
+    } elsif ($config->get('whatsout') eq 'archive') { # Archive conversion returns a ZIP
+      $self->render(data => $result);
     } else {
-        $self->render(json => {result => $result, status => $status, status_code=>$status_code, log => $log});
+      $self->render(json => {result => $result, status => $status, status_code=>$status_code, log => $log});
     }
   }
 });
