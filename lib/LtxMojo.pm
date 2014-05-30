@@ -14,7 +14,7 @@ use IO::String;
 use Encode;
 
 use LaTeXML::Common::Config;
-use LaTeXML::Util::Pathname qw(pathname_is_literaldata pathname_is_url);
+use LaTeXML::Util::Pathname qw(pathname_protocol);
 use LaTeXML;
 use LtxMojo::Startup;
 
@@ -59,7 +59,7 @@ $app->helper(convert_zip => sub {
   my $opts=[];
   # Ugh, disallow 'null' as a value!!! (TODO: Smarter fix??)
   while (my ($key,$value) = splice(@all_params,0,2)) {
-    if ($key=~/local|path|destination|directory/) {
+    if ($key=~/^(?:local|path|destination|directory)$/) {
       # You don't get to specify harddrive info in the web service
       next; }
     $value = '' if ($value && ($value  eq 'null'));
@@ -78,7 +78,9 @@ $app->helper(convert_zip => sub {
   # Prepare and convert
   my $converter = LaTeXML->get_converter($config);
   $converter->prepare_session($config);
-  my $response = $converter->convert('literal:'.$self->req->body);
+  my $source = $self->req->body;
+  $source = "literal:".$source if ($source && (pathname_protocol($source) eq 'file'));
+  my $response = $converter->convert($source);
   # Catch errors
   $self->render(text=>'Fatal: Internal Conversion Error, please contact the administrator.') unless
     (defined $response && ($response->{result}));
@@ -111,7 +113,7 @@ $app->helper(convert_string => sub {
   if (scalar(@$post_params) == 1) {
     $source = $post_params->[0];
     $post_params=[];
-  } elsif ((scalar(@$post_params) == 2) && ($post_params->[0] !~ /^(tex|source)$/)) {
+  } elsif ((scalar(@$post_params) == 2) && ($post_params->[0] !~ /^(?:tex|source)$/)) {
     $source = $post_params->[0].$post_params->[1];
     $post_params=[];
   }
@@ -124,13 +126,15 @@ $app->helper(convert_string => sub {
     if ($key eq 'jsonp') {
       $is_jsonp = $value;
       next;
-    } elsif ($key =~ /^(tex|source)$/) {
+    } elsif ($key =~ /^(?:tex|source)$/) {
       # TeX is data, separate
       $source = $value unless defined $source;
       next;
-    } elsif ($key=~/local|path|destination|directory/) {
+    } elsif ($key=~/^(?:local|path|destination|directory)$/) {
       # You don't get to specify harddrive info in the web service
       next;
+    } elsif ($key=~/^(?:preamble|postamble)$/) {
+      $value = "literal:".$value if ($value && (pathname_protocol($value) eq 'file'));
     }
     $value = '' if ($value && ($value  eq 'null'));
     push @$opts, ($key,$value);
@@ -149,7 +153,7 @@ $app->helper(convert_string => sub {
     $self->render(json => {result => '', status => "Fatal:input:empty No TeX provided on input", status_code=>3,
                            log => "Status:conversion:3\nFatal:input:empty No TeX provided on input"});
   } else {
-    $source = "literal:".$source unless (pathname_is_url($source));
+    $source = "literal:".$source if ($source && (pathname_protocol($source) eq 'file'));
     #Send a request:
     my $response = $converter->convert($source);
     my ($result, $status, $status_code, $log);
@@ -325,90 +329,79 @@ $r->any('/ajax' => sub {
   if ($header && $header eq 'XMLHttpRequest') {
 
     # Users API:
-    if ($self->param('user_action')) {
+    my $user_action = $self->param('user_action');
+    if ($user_action) {
       my $name    = $self->param('name');
       my $message = 'This request was empty, please resend with Name set!';
-      given ($self->param('user_action')) {
-        when ('modify') {
-          if ($name) {
-            my $pass    = $self->param('pass');
-            my $role    = $self->param('role');
-            my $default = $self->param('default_profile');
-            $message = $startup->modify_user($name, $pass, $role, $default);
-          }
+      
+      if ($user_action eq 'modify') {
+        if ($name) {
+          my $pass    = $self->param('pass');
+          my $role    = $self->param('role');
+          my $default = $self->param('default_profile');
+          $message = $startup->modify_user($name, $pass, $role, $default);
         }
-        when ('add') {
-          if ($name) {
-            my $pass    = $self->param('pass');
-            my $role    = $self->param('role');
-            my $default = $self->param('default_profile');
-            $message = $startup->modify_user($name, $pass, $role, $default);
-          }
+      }
+      elsif ($user_action eq 'add') {
+        if ($name) {
+          my $pass    = $self->param('pass');
+          my $role    = $self->param('role');
+          my $default = $self->param('default_profile');
+          $message = $startup->modify_user($name, $pass, $role, $default); }
+      }
+      elsif ($user_action eq 'delete') { $message = $startup->delete_user($name) if $name; }
+      elsif ($user_action eq 'startup_users') {
+        $self->render(
+          json => {
+          users => $startup->users
         }
-        when ('delete') { $message = $startup->delete_user($name) if $name; }
-        when ('startup_users') {
-          $self->render(
-            json => {
-              users => $startup->users
-            }
-          );
-        }
-        when ('overview_users') {
-          my $users   = $startup->users;
-          my $summary = [];
-          push @$summary, $startup->summary_user($_) foreach (@$users);
-          $self->render(json => {users => $users, summary => $summary});
-        }
-        default { $message = "Unrecognized Profile Action!" }
-      };
+      );}
+      elsif ($user_action eq 'overview_users') {
+        my $users   = $startup->users;
+        my $summary = [];
+        push @$summary, $startup->summary_user($_) foreach (@$users);
+        $self->render(json => {users => $users, summary => $summary});
+      }
+      else { $message = "Unrecognized Profile Action!" }
       $self->render(json => {message => $message});
     }
 
     # Profiles API:
-    if ($self->param('profile_action')) {
+    my $profile_action = $self->param('profile_action');
+    if ($profile_action) {
       my $message =
         'This request was empty, please resend with profile_action set!';
-      given ($self->param('profile_action')) {
-        when ('startup_profiles') {
-          $self->render(
-            json => {
-              profiles => [@{$startup->profiles}]
-            }
-          );
-        }
-        when ('select') {
-          my $pname = $self->param('profile_name');
-          $self->render(json => {message => 'Please provide a profile name!'})
-            unless $pname;
-          my $form  = $startup->summary_profile($pname);
-          my $lines = 0;
-          $lines++ while ($form =~ /<[tb]r/g);
-          my $minh = "min-height: " . ($lines * 5) . "px;";
-          my $message = "Selected profile: " . $pname;
-          my $json = Mojo::JSON->new;
-          open TMP, ">", "/tmp/json.txt";
-          print TMP $json->encode(
-            {form => $form, style => $minh, message => $message});
-          close TMP;
-          $self->render(
-            text => $json->encode(
-              {form => $form, style => $minh, message => $message}
-            )
-          );
-        }
-        default {
-          $self->render(
-            json => {
-              message => "Unrecognized Profile Action!"
-            }
-            )
-        }
-      };
+      if ($profile_action eq 'startup_profiles') {
+        $self->render(
+          json => {
+            profiles => [@{$startup->profiles}]
+          }
+        );
+      }
+      elsif ($profile_action eq 'select') {
+        my $pname = $self->param('profile_name');
+        $self->render(json => {message => 'Please provide a profile name!'})
+          unless $pname;
+        my $form  = $startup->summary_profile($pname);
+        my $lines = 0;
+        $lines++ while ($form =~ /<[tb]r/g);
+        my $minh = "min-height: " . ($lines * 5) . "px;";
+        my $message = "Selected profile: " . $pname;
+        my $json = Mojo::JSON->new;
+        open TMP, ">", "/tmp/json.txt";
+        print TMP $json->encode(
+          {form => $form, style => $minh, message => $message});
+        close TMP;
+        $self->render(
+          text => $json->encode(
+            {form => $form, style => $minh, message => $message}
+          )
+        );
+      }
+      else {$self->render(json => {message => "Unrecognized Profile Action!"});}
       $self->render(json => {message => $message});
     }
-
     # General Actions API:
-
   }
   else {
     $self->render(text => "Only AJAX request are acceptexd at this route!\n");
