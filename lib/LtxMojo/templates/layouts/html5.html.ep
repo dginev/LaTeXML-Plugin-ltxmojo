@@ -110,7 +110,7 @@ if (!canMathML) {
   <p class="left">
     <a alt="LaTeXML"
     href="http://dlmf.nist.gov/LaTeXML/"><strong>LaTeXML
-    0.7</strong></a><br />
+    <%= $LaTeXML::VERSION %></strong></a><br />
   </p><p class="right">
   <a href="http://jquery.com"><img alt="jQuery Logo" width="100" src="img/external/JQuery_logo.svg" /></a>
   <a href="http://mojolicio.us">

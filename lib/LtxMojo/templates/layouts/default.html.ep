@@ -111,7 +111,7 @@ if (!canMathML) {
 <%= content %>
 <div id="footer" lang="en" xml:lang="en"><hr />
   <p class="left">
-    <a alt="LaTeXML" href="http://dlmf.nist.gov/LaTeXML/"><strong>LaTeXML 0.7</strong></a>
+    <a alt="LaTeXML" href="http://dlmf.nist.gov/LaTeXML/"><strong>LaTeXML <%= $LaTeXML::VERSION %> </strong></a>
   </p>
 <p class="right">
   <a href="http://jquery.com"><img alt="jQuery Logo" width="100" src="img/external/JQuery_logo.svg" /></a>
