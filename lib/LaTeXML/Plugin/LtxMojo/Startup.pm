@@ -1,5 +1,5 @@
 ################ LaTeXML Startup Utilities #####################
-package LtxMojo::Startup;
+package LaTeXML::Plugin::LtxMojo::Startup;
 use LaTeXML::Util::ObjectDB;
 use LaTeXML::Util::Pathname;
 use Data::Dumper;
@@ -247,7 +247,7 @@ __END__
 
 =head1 NAME
 
-C<Startup> Basic support for user and conversion profile management.
+C<LaTeXML::Plugin::LtxMojo::Startup> Basic support for user and conversion profile management.
 
 =head1 SYNOPSIS
 

@@ -7,4 +7,4 @@ BEGIN { unshift @INC, "$FindBin::Bin/../lib" }
 
 # Start command line interface for application
 require Mojolicious::Commands;
-Mojolicious::Commands->start_app('LtxMojo');
+Mojolicious::Commands->start_app('LaTeXML::Plugin::LtxMojo');

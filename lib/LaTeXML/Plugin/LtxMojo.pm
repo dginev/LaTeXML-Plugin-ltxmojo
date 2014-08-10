@@ -1,4 +1,4 @@
-package LtxMojo;
+package LaTeXML::Plugin::LtxMojo;
 use Mojo::Base 'Mojolicious';
 use Mojo::JSON;
 use Mojo::IOLoop;
@@ -16,7 +16,7 @@ use Encode;
 use LaTeXML::Common::Config;
 use LaTeXML::Util::Pathname qw(pathname_protocol);
 use LaTeXML;
-use LtxMojo::Startup;
+use LaTeXML::Plugin::LtxMojo::Startup;
 
 our $dbfile  = '.LaTeXML_Mojo.cache';
 
@@ -43,7 +43,7 @@ $ENV{MOJO_INACTIVITY_TIMEOUT} = 600; # 10 minutes;
 $app->secrets(['LaTeXML is the way to go!']);
 
 #Prep a LaTeXML Startup instance
-my $startup = LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
+my $startup = LaTeXML::Plugin::LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
 
 # Do a one-time check for admin, add if none:
 $startup->modify_user('admin', 'admin', 'admin')
