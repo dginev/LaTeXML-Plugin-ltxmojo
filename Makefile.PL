@@ -14,7 +14,7 @@ WriteMakefile(
   VERSION_FROM => 'lib/LtxMojo.pm',
   PREREQ_PM => {
     'LaTeXML' => '0.8.0',
-    'Mojolicious' => '4.0',
+    'Mojolicious' => '5.0',
     'Archive::Zip' => 0,
     'IO::String' => 0
   },
