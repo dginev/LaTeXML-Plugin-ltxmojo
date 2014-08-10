@@ -97,15 +97,20 @@ sub lookup_user_property {
 
 sub modify_profile {
   my($self,$profile,$opts) = @_;
-  $self->{db}->register("profile:$profile",%$opts);
-}
+  $self->{db}->register("profile:$profile",%$opts); }
 
 sub get_profile {
   my ($self,$profile) = @_;
   my $p_entry = $self->{db}->lookup("profile:$profile");
-  return $p_entry->as_hashref if defined $p_entry;
-  undef;
-}
+  return as_hashref($p_entry) if defined $p_entry;
+  undef; }
+
+sub as_hashref {
+  my($self)=@_;
+  my $hashref = {};
+  foreach (keys %$self) {
+    $hashref->{$_} = decodeValue($self->{$_}); }
+  return $hashref; }
 
 sub profiles {
   my ($self) = @_;
@@ -217,26 +222,10 @@ sub template_profile {
 #### Statistics #####
 ###########################################
 
-
 sub status {
   my ($self) = @_;
   #TODO: Provide info on the status of the DB, table of booted converters with their profiles, etc.
   $self->{db}->status;
-}
-
- #TODO: Also provide an interface for examining and changing the options of existing converters
-
-###########################################
-#### ObjectDB helpers #####
-###########################################
-package LaTeXML::Util::ObjectDB::Entry;
-sub as_hashref {
-  my($self)=@_;
-  my $hashref = {};
-  foreach (keys %$self) {
-    $hashref->{$_} = decodeValue($self->{$_});
-  }
-  return $hashref;
 }
 
 1;
