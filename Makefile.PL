@@ -19,5 +19,16 @@ WriteMakefile(
     'IO::String' => 0
   },
   EXE_FILES => ['script/ltxmojo'],
-  test => {TESTS => 't/*.t'}
+  test => {TESTS => 't/*.t'},
+  (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
+    'meta-spec' => { version => 2 },
+     resources => {
+         repository => {
+             type => 'git',
+             url  => 'https://github.com/dginev/LaTeXML-Plugin-ltxmojo.git',
+             web  => 'https://github.com/dginev/LaTeXML-Plugin-ltxmojo',
+         },
+     }})
+     : ()
+  ),
 );
