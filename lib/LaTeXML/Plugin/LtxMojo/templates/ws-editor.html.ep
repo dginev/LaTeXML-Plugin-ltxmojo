@@ -18,7 +18,7 @@
 <div id="counter" style="width: 45%; background-color: #cccccc; display: inline;">&nbsp;</div>
 <br /><div style="float:left"><%= select_field example =>
   [["Equations"=>"eqn"],["Tables"=>"tbl"],["Narrative"=>"nar"],["Color"=>"clr"],["Web
-  Graphics"=>"wgr"],["PSTricks Graphics"=>"psp"],["Metadata"=>"met"],["Wiki Syntax"=>"wik"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],["Select Example"=>"","selected"=>"selected"]],id => 'example_select' %></div>
+  Graphics"=>"wgr"],["PSTricks Graphics"=>"psp"],["Metadata"=>"met"],["Wiki Syntax"=>"wik"],["Boxes"=>"box"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],["Select Example"=>"","selected"=>"selected"]],id => 'example_select' %></div>
 <!-- ["Tikz Graphics"=>"tik"], -->
 <div style="display:none"><div id="source"></div></div>
 <%= javascript 'js/external/ace-min/ace.js' %>

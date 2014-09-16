@@ -17,7 +17,7 @@
 <div id="counter" style="width: 45%; background-color: #cccccc; display: inline;">&nbsp;</div>
 <br /><div style="float:left"><%= select_field example =>
   [["Equations"=>"eqn"],["Tables"=>"tbl"],["Narrative"=>"nar"],["Babel"=>"bab"],["Unicode"=>"utf"],["Color"=>"clr"],["Web
-  Graphics"=>"wgr"],["PSTricks Graphics"=>"psp"],["Metadata"=>"met"],["Wiki Syntax"=>"wik"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],
+  Graphics"=>"wgr"],["PSTricks Graphics"=>"psp"],["Metadata"=>"met"],["Wiki Syntax"=>"wik"],["Boxes"=>"box"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],
   ['Tikz Basic' =>"tikz-basic"],['Tikz AC Voltage'=>'tikz-ac-drive-voltage'],['Tikz Rotated Triangle'=>'tikz-rotated-triangle'],
   ["Select Example"=>"","selected"=>"selected"]],id => 'example_select' %>
 
