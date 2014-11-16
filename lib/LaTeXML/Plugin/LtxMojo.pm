@@ -66,7 +66,18 @@ $app->helper(convert_zip => sub {
     push @$opts, ($key,$value); }
 
   my $config = LaTeXML::Common::Config->new();
-  $config->read_keyvals($opts);
+  my $config_build_return = eval {
+    $config->read_keyvals($opts, silent=>1); };
+  if (!$config_build_return || $@) {
+    # ... error handling 
+    # and premature exit from the code block
+    $@ = "See 'latexmlc --help' for the full options specification" unless $@;
+    return $self->render(json => {
+      status_code=>3,
+      status=>"Fatal:http:request You have used illegal or ill-formed options in your request."
+      log=>"Fatal:http:request You have used illegal or ill-formed options in your request.\nDetails: $@\nStatus:conversion:3"});
+  }
+  
   my @latexml_inputs = ('.',grep {defined} split(':',($ENV{LATEXMLINPUTS}||'')));
   $config->set('paths',\@latexml_inputs);
   $config->set('whatsin','archive');
@@ -82,7 +93,7 @@ $app->helper(convert_zip => sub {
   $source = "literal:".$source if ($source && (pathname_protocol($source) eq 'file'));
   my $response = $converter->convert($source);
   # Catch errors
-  $self->render(text=>'Fatal: Internal Conversion Error, please contact the administrator.') unless
+  $self->render(json=>{status_code=>3,log=>'Fatal: Internal Conversion Error, please contact the administrator.'}) unless
     (defined $response && ($response->{result}));
   # Return
   my $headers = Mojo::Headers->new;
@@ -140,7 +151,15 @@ $app->helper(convert_string => sub {
     push @$opts, ($key,$value);
   }
   my $config = LaTeXML::Common::Config->new();
-  $config->read_keyvals($opts);
+  my $config_build_return = eval {
+    $config->read_keyvals($opts, silent=>1); };
+  if (!$config_build_return || $@) {
+    # ... error handling 
+    # and premature exit from the code block
+    $@ = "See 'latexmlc --help' for the full options specification" unless $@;
+    return $self->render(json=>{status_code=>3,log=>"Fatal: You have used illegal or ill-formed options in your request.".
+    "\nDetails:\n$@\n"});  
+  }
   # We now have a LaTeXML config object - $config.
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
   $config->set('paths',\@latexml_inputs);
@@ -207,7 +226,15 @@ $r->websocket('/convert' => sub {
 	      my $source = $opts->{source}; delete $opts->{source};
 	      $source = $opts->{tex} unless defined $opts->{source}; delete $opts->{tex};
 	      my $config = LaTeXML::Common::Config->new();
-        $config->read_keyvals([%$opts]);
+        my $config_build_return = eval {
+          $config->read_keyvals([%$opts], silent=>1); };
+        if (!$config_build_return || $@) {
+          # ... error handling 
+          # and premature exit from the code block
+          $@ = "See 'latexmlc --help' for the full options specification" unless $@;
+          return $$tx->send({text=>$json->encode(status_code=>3,log=>"Fatal: You have used illegal or ill-formed options in your request.".
+            "\nDetails:\n$@\n")});  
+        }
 	      # We now have a LaTeXML options object - $opt.
 	      my $converter = LaTeXML->get_converter($config);
 	      #Override/extend with session-specific options in $opt:
