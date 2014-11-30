@@ -74,7 +74,7 @@ $app->helper(convert_zip => sub {
     $@ = "See 'latexmlc --help' for the full options specification" unless $@;
     return $self->render(json => {
       status_code=>3,
-      status=>"Fatal:http:request You have used illegal or ill-formed options in your request."
+      status=>"Fatal:http:request You have used illegal or ill-formed options in your request.",
       log=>"Fatal:http:request You have used illegal or ill-formed options in your request.\nDetails: $@\nStatus:conversion:3"});
   }
   
