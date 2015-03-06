@@ -119,8 +119,8 @@ $app->helper(convert_zip => sub {
 $app->helper(convert_string => sub {
   my ($self) = @_;  
   my ($source,$is_jsonp);
-  my $get_params = $self->req->url->query->params || [];
-  my $post_params = $self->req->body_params->params || [];
+  my $get_params = $self->req->url->query->pairs || [];
+  my $post_params = $self->req->body_params->pairs || [];
   if (scalar(@$post_params) == 1) {
     $source = $post_params->[0];
     $post_params=[];
