@@ -101,7 +101,7 @@ if (!canMathML) {
     </div>
     <div id="mainnav" class="nav">
     <ul>
-      <li><a href="/about">About</a></li><li><a href="/upload">Upload &amp; Convert</a></li><li><a href="/editor">Web Editor</a></li><li><a href="/demo">Demo</a></li><li class="last"><a href="/admin" title="Administration">Admin</a><a href="/help">Help</a></li>
+      <li><a href="/about">About</a></li><li><a href="/upload">Upload &amp; Convert</a></li><li><a href="/editor">Web Editor</a></li><li><a href="/help">Help</a></li>
     </ul>
   </div>
 </div>

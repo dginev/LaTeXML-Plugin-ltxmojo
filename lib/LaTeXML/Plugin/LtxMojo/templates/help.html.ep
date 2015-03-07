@@ -29,11 +29,11 @@ send their URL (http://www.example.com/foo.tex) as the "tex" parameter.</li>
 <p> curl --data-binary @somezip.zip http://latexml.mathweb.org/convert -H"Content-Type: multipart/form-data" -H"X-File-Type: application/zip" -H"X-File-Name: somezip.zip" > result.zip
 </p>
 </ul>
-<h2>Classic Setup</h2>
-Try the classic interface at <a href="http://tex2xml.kwarc.info/">http://tex2xml.kwarc.info/</a>
+<!--<h2>Classic Setup</h2>
+Try the classic interface at <a href="http://tex2xml.kwarc.info/">http://tex2xml.kwarc.info/</a>-->
 
 <h2>Contact</h2>
 For questions and requests, please contact
-<a href="http://kwarc.info/people/dginev">Deyan Ginev</a> (d DOT ginev AT jacobs-university.de)
+<a href="https://kwarc.info/people/dginev">Deyan Ginev</a> (d DOT ginev AT jacobs-university.de)
 
 </div>
