@@ -4,6 +4,7 @@
   <title><%= title %></title>
   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
   <link rel="stylesheet" type="text/css" href="css/external/LaTeXML.css" />
+  <link rel="stylesheet" type="text/css" href="css/external/ltx-report.css" id="ltxstyle_link"/>
   <link rel="stylesheet" type="text/css" href="css/external/jquery-ui.css" />
   <link rel="stylesheet" type="text/css" href="css/external/trac.css" />
   <link rel="stylesheet" type="text/css" href="css/external/trac-sanity.css" />
