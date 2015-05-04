@@ -55,7 +55,7 @@ $app->helper(convert_zip => sub {
   my $name = $self->req->headers->header('x-file-name');
   $name =~ s/\.zip$//;
   # HTTP GET parameters hold the conversion options
-  my @all_params = @{ $self->req->url->query->params || [] };
+  my @all_params = @{ $self->req->url->query->pairs || [] };
   my $opts=[];
   # Ugh, disallow 'null' as a value!!! (TODO: Smarter fix??)
   while (my ($key,$value) = splice(@all_params,0,2)) {
