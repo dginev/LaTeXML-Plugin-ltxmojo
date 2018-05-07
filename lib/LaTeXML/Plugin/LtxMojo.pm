@@ -1,5 +1,7 @@
 package LaTeXML::Plugin::LtxMojo;
 use Mojo::Base 'Mojolicious';
+use Mojo::File 'path';
+use Mojo::Home;
 use Mojo::JSON;
 use Mojo::IOLoop;
 use Mojo::ByteStream qw(b);
@@ -26,13 +28,15 @@ our $VERSION = '0.4';
 # This method will run once at server start
 sub startup {
 my $app = shift;
+
 # Switch to installable home directory
-$app->home->parse(catdir(dirname(__FILE__), 'LtxMojo'));
+$app->home(Mojo::Home->new(path(__FILE__)->sibling('LtxMojo')));
 
 # Switch to installable "public" directory
-$app->static->paths->[0] = $app->home->rel_dir('public');
+$app->static->paths->[0] = $app->home->child('public');
+
 # Switch to installable "templates" directory
-$app->renderer->paths->[0] = $app->home->rel_dir('templates');
+$app->renderer->paths->[0] = $app->home->child('templates');
 
 $ENV{MOJO_MAX_MESSAGE_SIZE} = 107374182; # close to 100 MB file upload limit
 $ENV{MOJO_REQUEST_TIMEOUT} = 600;# 10 minutes;

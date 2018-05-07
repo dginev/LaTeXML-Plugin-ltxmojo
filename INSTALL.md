@@ -4,39 +4,9 @@ This manual assumes a Debian-based OS.
 
 ### Generics
 
-1. Install a TeX distribution, e.g. TeXlive:
+1. [Install LaTeXML](https://dlmf.nist.gov/LaTeXML/get.html)
 
-    ```
-    $ sudo apt-get install texlive
-    ```
-
-2. Install Subversion
-    
-    ```
-    $ sudo apt-get install subversion
-    ```
-
-3. Install LaTeXML dependencies
-  
-    ```
-    $ sudo apt-get install libclone-perl \
-    libdata-compare-perl perlmagick \
-    libparse-recdescent-perl libxml-libxml-perl \
-    libxml-libxslt-perl libarchive-zip-perl libio-string-perl libuuid-tiny-perl
-    ```
-
-4. Install LaTeXML from the arXMLiv branch:
-    
-    ```
-    $ svn co https://svn.mathweb.org/repos/LaTeXML/branches/arXMLiv LaTeXML/
-    $ cd LaTeXML/
-    $ perl Makefile.PL
-    $ make
-    $ make test
-    $ sudo make install
-    ```
-
-5. Install Mojolicious (bleeding edge)
+2. Install Mojolicious (bleeding edge)
 
     ```
     $ sudo apt-get install curl

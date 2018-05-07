@@ -29,12 +29,12 @@ Jump right to a revealing {\bf\large\color{blue}\href{/editor?demo=eqn}{DEMO}}.\
 
 Selected Publications:\\
 \begin{enumerate}
-\item[2011] \href{https://svn.kwarc.info/repos/arXMLiv/doc/cicm-systems11/paper.pdf}{The LaTeXML Daemon: Editable Math on the Collaborative Web}
-\item[2012] \href{http://arxiv.org/abs/1404.6549}{LaTeXML 2012 - A Year of LaTeXML}
-\item[2013] \href{http://arxiv.org/abs/1404.6547}{E-books and Graphics with LaTeXML}
+\item[2011] \href{https://pdfs.semanticscholar.org/c0ac/4096dd8f3f342924417c7d38307c8c5cb7a4.pdf}{The LaTeXML Daemon: Editable Math on the Collaborative Web}
+\item[2012] \href{https://arxiv.org/abs/1404.6549}{LaTeXML 2012 - A Year of LaTeXML}
+\item[2013] \href{https://arxiv.org/abs/1404.6547}{E-books and Graphics with LaTeXML}
 \end{enumerate}
 
 \section*{Disclaimer}
-Both \href{http://dlmf.nist.gov/LaTeXML/}{LaTeXML} and this showcase are {\color{red}Public Domain} software
+Both \href{https://dlmf.nist.gov/LaTeXML/}{LaTeXML} and this showcase are {\color{red}Public Domain} software
 
 </div></div>
