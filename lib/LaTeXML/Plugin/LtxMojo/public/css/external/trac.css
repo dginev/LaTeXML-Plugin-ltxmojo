@@ -103,7 +103,7 @@ label.disabled { color: #d7d7d7 }
 .buttons { margin: .5em .5em .5em 0 }
 .buttons form, .buttons form div { display: inline }
 .buttons input { margin: 1em .5em .1em 0 }
-.inlinebuttons input { 
+.inlinebuttons input {
  font-size: 70%;
  border-width: 1px;
  border-style: dotted;
@@ -138,7 +138,7 @@ label.disabled { color: #d7d7d7 }
 
 /* Navigation */
 .nav h2, .nav hr { display: none }
-.nav ul { 
+.nav ul {
  font-size: 10px;
  list-style: none;
  margin: 0;
@@ -240,8 +240,9 @@ label.disabled { color: #d7d7d7 }
   border-top: 1px solid;
   height: 31px;
   padding: .25em 0;
+  margin-top: 2em;
 }
-#footer :link, #footer :visited { color: #bbb; }
+
 #footer hr { display: none }
 #footer #tracpowered { border: 0; float: left }
 #footer #tracpowered:hover { background: transparent }
@@ -363,12 +364,12 @@ pre.wiki, pre.literal-block {
  overflow: auto;
 }
 
-blockquote.citation { 
+blockquote.citation {
  margin: -0.6em 0;
- border-style: solid; 
- border-width: 0 0 0 2px; 
+ border-style: solid;
+ border-width: 0 0 0 2px;
  padding-left: .5em;
- border-color: #b44; 
+ border-color: #b44;
 }
 .citation blockquote.citation { border-color: #4b4; }
 .citation .citation blockquote.citation { border-color: #44b; }
@@ -579,10 +580,10 @@ div.system-message p.system-message-title { font-weight: bold; }
 #content .paging { margin: 0 0 2em; padding: .5em 0 0;
   font-size: 85%; line-height: 2em; text-align: center;
 }
-#content .paging .current { 
+#content .paging .current {
   padding: .1em .3em;
   border: 1px solid #333;
-  background: #999; color: #fff; 
+  background: #999; color: #fff;
 }
 
 #content .paging :link, #content .paging :visited {
@@ -593,7 +594,7 @@ div.system-message p.system-message-title { font-weight: bold; }
 #content .paging :link:hover, #content .paging :visited:hover {
   background: #999; color: #fff;  border-color: #333;
 }
-#content .paging .previous a, 
+#content .paging .previous a,
 #content .paging .next a {
   font-size: 150%; font-weight: bold; border: none;
 }

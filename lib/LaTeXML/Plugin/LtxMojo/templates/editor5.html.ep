@@ -1,6 +1,5 @@
 % layout 'html5';
 % title 'In-browser HTML5 Editor of LaTeX Fragments';
-<link rel="stylesheet" type="text/css" href="css/editor.css">
 
 <div style="display:inline; float:left; height: 95%; width: 45%; overflow-y:auto;">
 <!--   <h2 class="bodyslogan"></h2>
@@ -15,8 +14,7 @@
 <div style="clear:both; font-size:0px;">&nbsp;</div>
 <div id="counter" style="width: 45%; background-color: #cccccc; display: inline;">&nbsp;</div>
 <div style="float:left"><%= select_field example =>
-  [["Equations"=>"eqn"],["Tables"=>"tbl"],["Narrative"=>"nar"],["Babel"=>"bab"],["Unicode"=>"utf"],["Color"=>"clr"],["Web
-  Graphics"=>"wgr"],["PSTricks Graphics"=>"psp"],["Metadata"=>"met"],["Wiki Syntax"=>"wik"],["Boxes"=>"box"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],
+  [["Equations"=>"eqn"],["Tables"=>"tbl"],["Narrative"=>"nar"],["Babel"=>"bab"],["Unicode"=>"utf"],["Color"=>"clr"],["PSTricks Graphics"=>"psp"],["Wiki Syntax"=>"wik"],["Boxes"=>"box"],["Obfuscated"=>"xii"],["Turing Machine"=>"tur"],
   ['Tikz Basic' =>"tikz-basic"],['Tikz AC Voltage'=>'tikz-ac-drive-voltage'],['Tikz Rotated Triangle'=>'tikz-rotated-triangle'],
   #["Random Numbers"=>"rand"],
   ["Select Example"=>"","selected"=>"selected"]],id => 'example_select' %>

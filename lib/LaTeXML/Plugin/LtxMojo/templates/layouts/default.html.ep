@@ -9,6 +9,7 @@
   <link rel="stylesheet" type="text/css" href="css/external/jquery-ui.css" />
   <link rel="stylesheet" type="text/css" href="css/external/trac.css" />
   <link rel="stylesheet" type="text/css" href="css/external/trac-sanity.css" />
+  <link rel="stylesheet" type="text/css" href="css/editor.css" />
   <link rel="shortcut icon"  type="image/x-icon" href="css/external/favicon.ico" />
   <link rel="icon"  type="image/x-icon" href="css/external/favicon.ico" />
   <style type="text/css">
@@ -111,7 +112,7 @@
 
   <div id="footer" lang="en" xml:lang="en"><hr />
     <p class="left">
-      <a alt="LaTeXML" href="https://dlmf.nist.gov/LaTeXML/"><strong>LaTeXML <%= $LaTeXML::VERSION %> </strong></a>
+      <a alt="LaTeXML" href="https://dlmf.nist.gov/LaTeXML/"><strong>LaTeXML <%= $LaTeXML::VERSION %><%= $LaTeXML::Version::REVISION ? "  (".$LaTeXML::Version::REVISION.")":""%></strong></a>
     </p>
     <p class="right">
       <a href="https://www.kwarc.info"><img alt="KWARC Research Group" width="60" src="img/external/kwarc-logo-transparent.png"/></a>
