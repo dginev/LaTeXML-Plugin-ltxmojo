@@ -72,7 +72,7 @@
     // Add script element loading MathJax unless we can handle MathML
     if (!canMathML) {
         var el = document.createElement('script');
-        el.src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=MML_HTMLorMML";
+        el.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=MML_HTMLorMML";
         document.querySelector('head').appendChild(el); }
   <% end %>
 </head>
@@ -81,7 +81,7 @@
     <div id="siteheader"></div>
     <div id="banner">
       <div id="header">
-        <p><a id="logo" href="http://dlmf.nist.gov/LaTeXML/"><img src="img/external/latexml-logo.png" alt="LaTeXML" width="70" ></a>
+        <p><a id="logo" href="https://dlmf.nist.gov/LaTeXML/"><img src="img/external/latexml-logo.png" alt="LaTeXML" width="70" ></a>
         <span id="slogan">ltxMojo: LaTeXML's Web Server</span></p>
       </div>
       <div id="messagediv" style="width:20%; margin-bottom:0; font-weight: bold; padding-top: 15px;">
