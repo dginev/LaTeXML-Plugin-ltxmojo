@@ -61,6 +61,7 @@
   </style>
   <%= javascript 'js/external/jquery.min.js' %>
   <%= javascript 'js/external/jquery-ui.min.js' %>
+
   <%= javascript begin %>
     //======================================================================
     // Load MathJax, IFF the current browser can't handle MathML natively.
@@ -135,6 +136,7 @@
       </div>
     </div>
   </div>
+  <%= javascript 'https://privacy.kwarc.info/policy.js' %>
 </body>
 </html>
 
