@@ -1,5 +1,5 @@
-% layout 'default';
-% title 'In-browser XHTML Editor of LaTeX Fragments';
+% layout 'html5';
+% title 'In-browser HTML5 Editor of LaTeX Fragments';
 
 <div style="display:inline; float:left; height: 95%; width: 45%; overflow-y:auto;">
 <!--   <h2 class="bodyslogan"></h2>

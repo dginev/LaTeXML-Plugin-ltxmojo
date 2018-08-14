@@ -152,8 +152,10 @@ $app->helper(convert_string => sub {
       $value = "literal:".$value if ($value && (pathname_protocol($value) eq 'file'));
     }
     $value = '' if ($value && ($value  eq 'null'));
+    $key=~s/\[\]$//; # strip array suffix for e.g. preamble[]
     push @$opts, ($key,$value);
   }
+
   my $config = LaTeXML::Common::Config->new();
   my $config_build_return = eval {
     $config->read_keyvals($opts, silent=>1); };
@@ -289,27 +291,10 @@ $r->get('/demo' => sub {
 $r->get('/editor' => sub {
   my $self    = shift;
   my $headers = Mojo::Headers->new;
-  $headers->add('Content-Type', 'application/xhtml+xml');
-  $self->res->content->headers($headers);
-  $self->render();
-} => 'editor');
-
-$r->get('/editor5' => sub {
-  my $self    = shift;
-  my $headers = Mojo::Headers->new;
   $headers->add('Content-Type', 'text/html');
   $self->res->content->headers($headers);
   $self->render();
-} => 'editor5');
-
-$r->get('/ws-editor' => sub {
-  my $self    = shift;
-  my $headers = Mojo::Headers->new;
-  $headers->add('Content-Type', 'application/xhtml+xml');
-  $self->res->content->headers($headers);
-  $self->render();
-} => 'ws-editor');
-
+} => 'editor');
 
 $r->get('/' => sub {
   my $self = shift;

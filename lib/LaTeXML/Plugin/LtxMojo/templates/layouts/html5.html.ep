@@ -78,19 +78,19 @@
   <% end %>
 </head>
 
-<body style="font-size:72.5%;">
-    <div id="siteheader"></div>
-    <div id="banner">
-      <div id="header">
-        <p><a id="logo" href="https://dlmf.nist.gov/LaTeXML/"><img src="img/external/latexml-logo.png" alt="LaTeXML" width="70" ></a>
-        <span id="slogan">ltxMojo: LaTeXML's Web Server</span></p>
-      </div>
-      <div id="messagediv" style="width:20%; margin-bottom:0; font-weight: bold; padding-top: 15px;">
-          <span id='message'>
-            <%= flash 'message' %>
-          </span>
-      </div>
-
+<body>
+  <div id="siteheader"></div>
+  <div id="banner">
+    <div id="header">
+      <p><a id="logo" href="https://dlmf.nist.gov/LaTeXML/"><img src="img/external/latexml-logo.png" alt="LaTeXML" width="70" ></a>
+        <span id="slogan">ltxMojo: LaTeXML's Web Server</span>
+      </p>
+    </div>
+    <div id="messagediv" style="width:20%; margin-bottom:0; font-weight: bold; padding-top: 15px;">
+      <span id='message'>
+      <%= flash 'message' %>
+      </span>
+    </div>
     <div id="metanav" class="nav">
       <ul>
         <% if (my $name = session 'name' ) { %>
@@ -101,21 +101,21 @@
       </ul>
     </div>
     <div id="mainnav" class="nav">
-    <ul>
-      <li>
-        <a href="/about">About</a>
-      </li><li>
-        <a href="/upload">Upload &amp; Convert</a>
-      </li><li>
-        <a href="/editor">Web Editor</a>
-      </li><li>
-        <a href="/help">Help</a>
-      </li>
-    </ul>
+      <ul>
+        <li>
+          <a href="/about">About</a>
+        </li><li>
+          <a href="/upload">Upload &amp; Convert</a>
+        </li><li>
+          <a href="/editor">Web Editor</a>
+        </li><li>
+          <a href="/help">Help</a>
+        </li>
+      </ul>
+    </div>
   </div>
-</div>
 
-<%= content %>
+  <%= content %>
 
   <div id="footer" lang="en" xml:lang="en"><hr>
     <p class="left">
