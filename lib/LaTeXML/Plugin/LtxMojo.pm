@@ -43,6 +43,9 @@ $ENV{MOJO_REQUEST_TIMEOUT} = 600;# 10 minutes;
 $ENV{MOJO_CONNECT_TIMEOUT} = 120; # 2 minutes
 $ENV{MOJO_INACTIVITY_TIMEOUT} = 600; # 10 minutes;
 
+# We DO NOT USE cookies.
+$app->secrets([rand]);
+
 #Prep a LaTeXML Startup instance
 my $startup = LaTeXML::Plugin::LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
 
