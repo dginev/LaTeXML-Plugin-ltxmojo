@@ -13,7 +13,7 @@ use File::Path qw(remove_tree);
 
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use IO::String;
-use Encode qw(decode);
+use Encode qw(decode encode);
 
 use LaTeXML::Common::Config;
 use LaTeXML::Util::Pathname qw(pathname_protocol);
@@ -162,6 +162,7 @@ $app->helper(convert_string => sub {
                            log => "Status:conversion:3\nFatal:input:empty No TeX provided on input"});
   } else {
     $source = "literal:".$source if ($source && (pathname_protocol($source) eq 'file'));
+    $source = encode("UTF-8", $source);
     #Send a request:
     my $response = $converter->convert($source);
     my ($result, $status, $status_code, $log);

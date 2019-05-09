@@ -34,3 +34,13 @@
 div.ltx_table {
     display: block;
 }
+table.ltx_tabular {
+    table-layout: fixed;
+    width: 100%;
+    word-break:break-all;
+}
+table.ltx_tabular td.ltx_td {
+    word-wrap:break-word;
+    white-space: normal;
+    padding-bottom: 0.5em;
+}
