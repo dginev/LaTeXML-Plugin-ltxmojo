@@ -293,92 +293,6 @@ $r->post('/upload' => sub {
   }
 });
 
-$r->any('/ajax' => sub {
-  my $self = shift;
-  return $self->redirect_to('login') unless $self->session('name');
-  my $header = $self->req->headers->header('X-Requested-With');
-  if ($header && $header eq 'XMLHttpRequest') {
-
-    # Users API:
-    my $user_action = $self->param('user_action');
-    if ($user_action) {
-      my $name    = $self->param('name');
-      my $message = 'This request was empty, please resend with Name set!';
-
-      if ($user_action eq 'modify') {
-        if ($name) {
-          my $pass    = $self->param('pass');
-          my $role    = $self->param('role');
-          my $default = $self->param('default_profile');
-          $message = $startup->modify_user($name, $pass, $role, $default);
-        }
-      }
-      elsif ($user_action eq 'add') {
-        if ($name) {
-          my $pass    = $self->param('pass');
-          my $role    = $self->param('role');
-          my $default = $self->param('default_profile');
-          $message = $startup->modify_user($name, $pass, $role, $default); }
-      }
-      elsif ($user_action eq 'delete') { $message = $startup->delete_user($name) if $name; }
-      elsif ($user_action eq 'startup_users') {
-        $self->render(
-          json => {
-          users => $startup->users
-        }
-      );}
-      elsif ($user_action eq 'overview_users') {
-        my $users   = $startup->users;
-        my $summary = [];
-        push @$summary, $startup->summary_user($_) foreach (@$users);
-        $self->render(json => {users => $users, summary => $summary});
-      }
-      else { $message = "Unrecognized Profile Action!" }
-      $self->render(json => {message => $message});
-    }
-
-    # Profiles API:
-    my $profile_action = $self->param('profile_action');
-    if ($profile_action) {
-      my $message =
-        'This request was empty, please resend with profile_action set!';
-      if ($profile_action eq 'startup_profiles') {
-        $self->render(
-          json => {
-            profiles => [@{$startup->profiles}]
-          }
-        );
-      }
-      elsif ($profile_action eq 'select') {
-        my $pname = $self->param('profile_name');
-        $self->render(json => {message => 'Please provide a profile name!'})
-          unless $pname;
-        my $form  = $startup->summary_profile($pname);
-        my $lines = 0;
-        $lines++ while ($form =~ /<[tb]r/g);
-        my $minh = "min-height: " . ($lines * 5) . "px;";
-        my $message = "Selected profile: " . $pname;
-        my $json = Mojo::JSON->new;
-        open TMP, ">", "/tmp/json.txt";
-        print TMP $json->encode(
-          {form => $form, style => $minh, message => $message});
-        close TMP;
-        $self->render(
-          text => $json->encode(
-            {form => $form, style => $minh, message => $message}
-          )
-        );
-      }
-      else {$self->render(json => {message => "Unrecognized Profile Action!"});}
-      $self->render(json => {message => $message});
-    }
-    # General Actions API:
-  }
-  else {
-    $self->render(text => "Only AJAX request are acceptexd at this route!\n");
-  }
-});
-
 }
 1;
 
@@ -416,10 +330,6 @@ On HTTP GET, provides a brief summary of the web service functionality.
 
 On HTTP GET, provides an administrative interface for managing user and profile data, as well
 as to examine the overal system status.
-
-=item C</ajax>
-
-Manages AJAX requests for all administrative (and NOT conversion) tasks.
 
 =item C</convert>
 
