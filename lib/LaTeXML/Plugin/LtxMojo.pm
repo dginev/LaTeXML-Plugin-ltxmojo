@@ -43,15 +43,8 @@ $ENV{MOJO_REQUEST_TIMEOUT} = 600;# 10 minutes;
 $ENV{MOJO_CONNECT_TIMEOUT} = 120; # 2 minutes
 $ENV{MOJO_INACTIVITY_TIMEOUT} = 600; # 10 minutes;
 
-# Make signed cookies secure
-$app->secrets(['LaTeXML is the way to go!']);
-
 #Prep a LaTeXML Startup instance
 my $startup = LaTeXML::Plugin::LtxMojo::Startup->new(dbfile => catfile($app->home,$dbfile));
-
-# Do a one-time check for admin, add if none:
-$startup->modify_user('admin', 'admin', 'admin')
-  unless $startup->exists_user('admin');
 
 $app->helper(convert_zip => sub {
   my ($self) = @_;
@@ -73,7 +66,7 @@ $app->helper(convert_zip => sub {
   my $config_build_return = eval {
     $config->read_keyvals($opts, silent=>1); };
   if (!$config_build_return || $@) {
-    # ... error handling 
+    # ... error handling
     # and premature exit from the code block
     $@ = "See 'latexmlc --help' for the full options specification" unless $@;
     return $self->render(json => {
@@ -81,7 +74,7 @@ $app->helper(convert_zip => sub {
       status=>"Fatal:http:request You have used illegal or ill-formed options in your request.",
       log=>"Fatal:http:request You have used illegal or ill-formed options in your request.\nDetails: $@\nStatus:conversion:3"});
   }
-  
+
   my @latexml_inputs = ('.',grep {defined} split(':',($ENV{LATEXMLINPUTS}||'')));
   $config->set('paths',\@latexml_inputs);
   $config->set('whatsin','archive');
@@ -107,21 +100,8 @@ $app->helper(convert_zip => sub {
   return $self->render(data=>$response->{result});
 });
 
-  # TODO: Maybe reintegrate IF we support username-based profiles
-  # if (!defined $opt->{profile}) {
-  #   if (defined $opt->{user}
-  #     && $startup->verify_user($opt->{user}, $opt->{password}))
-  #   {
-  #     $opt->{profile} =
-  #       $startup->lookup_user_property($opt->{user}, 'default') || 'custom';
-  #   }
-  #   else {
-  #     $opt->{profile} = 'custom';
-  #   }
-  # }
-
 $app->helper(convert_string => sub {
-  my ($self) = @_;  
+  my ($self) = @_;
   my ($source,$is_jsonp);
   my $get_params = $self->req->url->query->pairs || [];
   my $post_params = $self->req->body_params->pairs || [];
@@ -160,11 +140,11 @@ $app->helper(convert_string => sub {
   my $config_build_return = eval {
     $config->read_keyvals($opts, silent=>1); };
   if (!$config_build_return || $@) {
-    # ... error handling 
+    # ... error handling
     # and premature exit from the code block
     $@ = "See 'latexmlc --help' for the full options specification" unless $@;
     return $self->render(json=>{status_code=>3,log=>"Fatal: You have used illegal or ill-formed options in your request.".
-    "\nDetails:\n$@\n"});  
+    "\nDetails:\n$@\n"});
   }
   # We now have a LaTeXML config object - $config.
   my @latexml_inputs = grep {defined} split(':',($ENV{LATEXMLINPUTS}||''));
@@ -190,7 +170,7 @@ $app->helper(convert_string => sub {
     # TODO: This decode business is fishy... very fishy!
     if ($is_jsonp) {
         my $json_result = $self->render(
-  	  json => {result => $result, 
+  	  json => {result => $result,
   		   status => $status, status_code=>$status_code, log => $log, partial=>1});
         $self->render(data => "$is_jsonp($json_result)", format => 'js');
     } elsif ($config->get('whatsout') eq 'archive') { # Archive conversion returns a ZIP
@@ -235,11 +215,11 @@ $r->websocket('/convert' => sub {
         my $config_build_return = eval {
           $config->read_keyvals([%$opts], silent=>1); };
         if (!$config_build_return || $@) {
-          # ... error handling 
+          # ... error handling
           # and premature exit from the code block
           $@ = "See 'latexmlc --help' for the full options specification" unless $@;
           return $$tx->send({text=>$json->encode(status_code=>3,log=>"Fatal: You have used illegal or ill-formed options in your request.".
-            "\nDetails:\n$@\n")});  
+            "\nDetails:\n$@\n")});
         }
 	      # We now have a LaTeXML options object - $opt.
 	      my $converter = LaTeXML->get_converter($config);
@@ -265,17 +245,6 @@ $r->websocket('/convert' => sub {
 	    });
 });
 
-$r->get('/login' => sub {
-  my $self = shift;
-  my $name = $self->param('name') || '';
-  my $pass = $self->param('pass') || '';
-  return $self->render
-    unless ($startup->verify_user($name, $pass) eq 'admin');
-  $self->session(name => $name);
-  $self->flash(message => "Thanks for logging in $name!");
-  $self->redirect_to('admin');
-} => 'login');
-
 $r->get('/about' => sub {
   my $self    = shift;
   my $headers = Mojo::Headers->new;
@@ -300,20 +269,6 @@ $r->get('/' => sub {
   my $self = shift;
   return $self->redirect_to('about');
 });
-
-$r->get('/logout' => sub {
-  my $self = shift;
-  $self->session(expires => 1);
-  $self->flash(message => "Successfully logged out!");
-  $self->redirect_to('login');
-});
-
-$r->get('/admin' => sub {
-  my $self = shift;
-  return $self->redirect_to('login') unless $self->session('name');
-  $self->stash(startup => $startup);
-  $self->render;
-} => 'admin');
 
 $r->get('/help' => sub {
   my $self = shift;
@@ -349,7 +304,7 @@ $r->any('/ajax' => sub {
     if ($user_action) {
       my $name    = $self->param('name');
       my $message = 'This request was empty, please resend with Name set!';
-      
+
       if ($user_action eq 'modify') {
         if ($name) {
           my $pass    = $self->param('pass');
