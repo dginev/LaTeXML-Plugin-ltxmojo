@@ -13,7 +13,7 @@ use File::Path qw(remove_tree);
 
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use IO::String;
-use Encode;
+use Encode qw(decode);
 
 use LaTeXML::Common::Config;
 use LaTeXML::Util::Pathname qw(pathname_protocol);
@@ -170,7 +170,6 @@ $app->helper(convert_string => sub {
     }
     # Delete converter if Fatal occurred
     undef $converter unless defined $result;
-    # TODO: This decode business is fishy... very fishy!
     if ($is_jsonp) {
         my $json_result = $self->render(
   	  json => {result => $result,
@@ -179,6 +178,10 @@ $app->helper(convert_string => sub {
     } elsif ($config->get('whatsout') eq 'archive') { # Archive conversion returns a ZIP
       $self->render(data => $result);
     } else {
+      # Ok we need to avoid a double UTF-8 encode by mojolicious. To do this, decode the result
+      if ($result) {
+        $result = decode("UTF-8", $result);
+      }
       $self->render(json => {result => $result, status => $status, status_code=>$status_code, log => $log});
     }
   }
