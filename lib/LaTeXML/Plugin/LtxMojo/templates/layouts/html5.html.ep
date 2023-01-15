@@ -14,7 +14,7 @@
   <style type="text/css">
     body { margin:0; background:#cfd2e6; color:#000000; }
     table.summary { border: 1px solid; border-collapse: collapse; }
-    table.summary td, th { border: 1px solid; } 
+    table.summary td, th { border: 1px solid; }
     table.nb {
      border: none;
      border-collapse: separate;
@@ -67,8 +67,7 @@
     // Load MathJax, IFF the current browser can't handle MathML natively.
 
     var agent = navigator.userAgent;
-    var canMathML = ((agent.indexOf('Gecko') > -1) && (agent.indexOf('KHTML') === -1)
-        || agent.match(/MathPlayer/) );
+    var canMathML = typeof(MathMLElement) == "function";
 
     // Add script element loading MathJax unless we can handle MathML
     if (!canMathML) {
@@ -139,4 +138,3 @@
   <%= javascript 'https://privacy.kwarc.info/policy.js' %>
 </body>
 </html>
-
