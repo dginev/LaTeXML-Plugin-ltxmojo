@@ -58,6 +58,20 @@
     option:hover {
         cursor: pointer;
     }
+    @font-face {
+      font-display: fallback;
+      font-family: "STIX Two Math";
+      font-style: normal;
+      src: local("STIX Two Math"),
+          local("STIXTwoMath-Regular"),
+          url(/fonts/STIXTwoMath-Regular.woff2) format("woff2"); }
+    math {
+      font-family: "STIX Two Math";
+    }
+    mfrac > * {
+      font-size:inherit;
+      padding: 0.1em;
+    }
   </style>
   <%= javascript 'js/external/jquery.min.js' %>
   <%= javascript 'js/external/jquery-ui.min.js' %>
