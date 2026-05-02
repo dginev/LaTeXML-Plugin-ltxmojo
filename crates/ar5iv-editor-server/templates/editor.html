@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}ar5iv-editor &mdash; LaTeX Web Editor{% endblock %}
+{% block main %}
+<section class="ar5iv-editor-shell">
+  <div class="pane pane-source">
+    <div class="pane-header">
+      <select id="example-select"><option value="">&mdash; examples &mdash;</option></select>
+      <span id="status">ready</span>
+    </div>
+    <div id="codemirror-host" class="codemirror-host"></div>
+  </div>
+  <div class="pane pane-preview">
+    <div class="pane-header">
+      <span id="preview-title">Preview</span>
+      <span id="counter" class="muted">0</span>
+    </div>
+    <div id="preview" class="preview"></div>
+    <pre id="log" class="log" hidden></pre>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/main.js"></script>
+{% endblock %}

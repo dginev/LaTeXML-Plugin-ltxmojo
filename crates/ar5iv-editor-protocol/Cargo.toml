@@ -1,0 +1,10 @@
+[package]
+name = "ar5iv-editor-protocol"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Wire protocol types shared between the ar5iv-editor server and its frontend."
+
+[dependencies]
+serde = { workspace = true }

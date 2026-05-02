@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}ar5iv-editor{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <header class="ar5iv-header">
+      <a href="/" class="ar5iv-logo">ar5iv-editor</a>
+      <nav>
+        <a href="/editor">Editor</a>
+        <a href="/about">About</a>
+        <a href="/help">Help</a>
+      </nav>
+    </header>
+    <main>{% block main %}{% endblock %}</main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

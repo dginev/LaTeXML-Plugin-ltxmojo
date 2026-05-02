@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ar5iv-editor &mdash; dev</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header class="ar5iv-header"><span class="ar5iv-logo">ar5iv-editor (dev)</span></header>
+    <main>
+      <section class="ar5iv-editor-shell">
+        <div class="pane pane-source">
+          <div class="pane-header">
+            <select id="example-select"><option value="">&mdash; examples &mdash;</option></select>
+            <span id="status">ready</span>
+          </div>
+          <div id="codemirror-host" class="codemirror-host"></div>
+        </div>
+        <div class="pane pane-preview">
+          <div class="pane-header">
+            <span id="preview-title">Preview</span>
+            <span id="counter" class="muted">0</span>
+          </div>
+          <div id="preview" class="preview"></div>
+          <pre id="log" class="log" hidden></pre>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

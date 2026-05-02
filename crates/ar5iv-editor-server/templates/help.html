@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Help &mdash; ar5iv-editor{% endblock %}
+{% block main %}
+<article class="prose">
+  <h1>Help</h1>
+  <ul>
+    <li>Type LaTeX in the left pane; the right pane re-renders after a 300&nbsp;ms pause.</li>
+    <li>If your snippet contains <code>\begin{document}&hellip;\end{document}</code>, the
+        preamble is split off and sent as <code>preamble</code>.</li>
+    <li>Click the status bar to toggle the conversion log.</li>
+  </ul>
+</article>
+{% endblock %}

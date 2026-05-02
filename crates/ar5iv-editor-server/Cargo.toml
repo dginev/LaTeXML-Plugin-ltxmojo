@@ -1,0 +1,44 @@
+[package]
+name = "ar5iv-editor-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Axum + WebSocket server hosting the ar5iv-editor LaTeX web editor."
+
+[lib]
+name = "ar5iv_editor"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ar5iv-editor"
+path = "src/main.rs"
+
+[dependencies]
+ar5iv-editor-protocol = { workspace = true }
+
+axum = { workspace = true }
+tokio = { workspace = true }
+tower-http = { workspace = true }
+
+askama = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+num_cpus = { workspace = true }
+futures-util = { workspace = true }
+
+# Replace this with the real private crate (path or git dep):
+#   latexml-oxide = { git = "ssh://git@github.com/dginev/latexml-oxide.git" }
+# Until then, the conversion path uses an in-tree stub so the server
+# builds and round-trips end-to-end without the private dependency.
+
+[dev-dependencies]
+tokio-tungstenite = "0.24"

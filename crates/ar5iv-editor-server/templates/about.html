@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}About &mdash; ar5iv-editor{% endblock %}
+{% block main %}
+<article class="prose">
+  <h1>ar5iv-editor</h1>
+  <p>
+    A web-based LaTeX editor with a live preview. Source TeX is sent to the
+    backend over a WebSocket; the server runs <code>latexml-oxide</code>
+    (a pure-Rust LaTeXML port) to produce HTML5 with native MathML, and the
+    rendered fragment is morphed back into the preview pane.
+  </p>
+  <p>
+    This is the Rust successor to the Perl / Mojolicious
+    <a href="https://github.com/dginev/LaTeXML-Plugin-ltxmojo">ltxmojo</a>
+    plugin.
+  </p>
+</article>
+{% endblock %}

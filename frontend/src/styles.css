@@ -1,0 +1,135 @@
+:root {
+  --bg: #fafafa;
+  --fg: #222;
+  --muted: #888;
+  --pane-bg: #fff;
+  --border: #ddd;
+  --accent: #2b6cb0;
+  font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.ar5iv-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.ar5iv-logo {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.ar5iv-header nav {
+  margin-left: auto;
+  display: flex;
+  gap: 1rem;
+}
+
+.ar5iv-header nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+main {
+  height: calc(100% - 49px);
+}
+
+.ar5iv-editor-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  background: var(--pane-bg);
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+
+.pane:last-child {
+  border-right: none;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  background: #f4f4f4;
+}
+
+.pane-header .muted,
+#counter {
+  color: var(--muted);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.codemirror-host {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.codemirror-host .cm-editor {
+  height: 100%;
+}
+
+.preview {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+  line-height: 1.4;
+}
+
+.log {
+  flex: 1;
+  margin: 0;
+  padding: 1rem;
+  white-space: pre-wrap;
+  background: #1e1e1e;
+  color: #ddd;
+  font-size: 0.8rem;
+  overflow: auto;
+}
+
+.prose {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  line-height: 1.5;
+}
+
+.ar5iv-stub {
+  border: 1px dashed var(--border);
+  padding: 0.75rem;
+  background: #fffaf0;
+  border-radius: 4px;
+}
+
+.ar5iv-stub pre {
+  margin: 0.5rem 0 0;
+  white-space: pre-wrap;
+  background: #f8f8f8;
+  padding: 0.5rem;
+  border-radius: 3px;
+}
