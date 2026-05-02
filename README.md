@@ -8,13 +8,38 @@ The browser sends LaTeX source over a WebSocket; the server runs
 LaTeXML port) and streams back HTML5 + native MathML, which the browser morphs
 into the preview pane.
 
+## Run it
+
+Two terminals.
+
+```sh
+# 1. Backend (port 3000)
+cargo run -p ar5iv-editor-server
+
+# 2. Frontend (Vite dev server on port 5173, proxies WS + routes to :3000)
+cd frontend && npm install && npm run dev
+```
+
+Open <http://localhost:5173/>. See [Quick start (development)](#quick-start-development)
+below for prerequisites, [Production build](#production-build) for a release
+binary, and `docs/` for the rest.
+
+## Documentation
+
+- **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)** — design, data flow,
+  concurrency model, wire protocol, file map, trade-offs.
+- **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)** — dev loop, tests, lint,
+  how to wire in real `latexml-oxide`, extension recipes, deployment notes,
+  CI starter.
+
 ## Status
 
 Early scaffold. The wire protocol, WebSocket plumbing, and editor UI are in
 place; `latexml-oxide` is wired in as a stub so the server runs end-to-end
 without the private dependency. Replace `oxide_convert` in
 `crates/ar5iv-editor-server/src/convert.rs` with a real call once the
-`latexml-oxide` crate is added as a dependency.
+`latexml-oxide` crate is added as a dependency
+(see [`docs/DEVELOPMENT.md` § Wiring in the real `latexml-oxide`](docs/DEVELOPMENT.md#wiring-in-the-real-latexml-oxide)).
 
 ## Stack
 
